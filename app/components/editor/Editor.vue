@@ -2,18 +2,28 @@
 import type { Level } from '@tiptap/extension-heading';
 import type { Editor as EditorType } from '@tiptap/vue-3';
 import Blockquote from '@tiptap/extension-blockquote';
+import Bold from '@tiptap/extension-bold';
+import Code from '@tiptap/extension-code';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
 import Document from '@tiptap/extension-document';
 import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 import Heading from '@tiptap/extension-heading';
+import Highlight from '@tiptap/extension-highlight';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import Image from '@tiptap/extension-image';
+import Italic from '@tiptap/extension-italic';
+import Link from '@tiptap/extension-link';
 import { BulletList, ListItem, OrderedList, TaskItem, TaskList } from '@tiptap/extension-list';
 import { Mathematics, migrateMathStrings } from '@tiptap/extension-mathematics';
 import Mention from '@tiptap/extension-mention';
 import Paragraph from '@tiptap/extension-paragraph';
+import Strike from '@tiptap/extension-strike';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
 import Text from '@tiptap/extension-text';
+import { BackgroundColor, Color, TextStyle } from '@tiptap/extension-text-style';
+import Underline from '@tiptap/extension-underline';
 import Youtube from '@tiptap/extension-youtube';
 import { Dropcursor, Placeholder } from '@tiptap/extensions';
 import { Editor, EditorContent, VueNodeViewRenderer } from '@tiptap/vue-3';
@@ -23,19 +33,31 @@ import ts from 'highlight.js/lib/languages/typescript';
 import html from 'highlight.js/lib/languages/xml';
 import { all, createLowlight } from 'lowlight';
 import {
+  BoldIcon,
+  Brush,
+  BrushIcon,
   ChevronDown,
-  Code,
+  Code2Icon,
+  CodeIcon,
   Heading1,
   Heading2,
   Heading3,
+  HighlighterIcon,
   ImageIcon,
+  ItalicIcon,
+  Link2Icon,
   List,
   ListChecks,
   ListOrdered,
   Minus,
+  PaintbrushIcon,
   Quote,
   SigmaIcon,
   SquareSigma,
+  StrikethroughIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
+  UnderlineIcon,
   YoutubeIcon,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
@@ -52,6 +74,63 @@ lowlight.register('html', html);
 lowlight.register('css', css);
 lowlight.register('js', js);
 lowlight.register('ts', ts);
+
+function toggleBold() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleBold().run();
+  }
+}
+
+function toggleItalic() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleItalic().run();
+  }
+}
+
+function toggleStrike() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleStrike().run();
+  }
+}
+
+function toggleUnderline() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleUnderline().run();
+  }
+}
+
+function toggleLink() {
+  const previousUrl = editor.value?.getAttributes('link').href;
+  const url = prompt('URL', previousUrl) ?? '';
+
+  if (url) {
+    editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
+  }
+}
+
+function toggleCode() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleCode().run();
+  }
+}
+
+function toggleHighlight() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleHighlight().run();
+  }
+}
+
+function toggleSuperscript() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleSuperscript().run();
+  }
+}
+
+function toggleSubscript() {
+  if (editor.value) {
+    editor.value?.chain().focus().toggleSubscript().run();
+  }
+}
 
 function toggleBlockquote() {
   if (editor.value) {
@@ -171,6 +250,26 @@ function addVideo() {
   }
 }
 
+function toggleBackgroundColor() {
+  if (editor.value) {
+    if (editor.value?.isActive('textStyle')) {
+      editor.value?.chain().focus().unsetBackgroundColor().run();
+    } else {
+      editor.value?.chain().focus().setBackgroundColor('#faf594').run();
+    }
+  }
+}
+
+function toggleTextColor() {
+  if (editor.value) {
+    if (editor.value?.isActive('textStyle')) {
+      editor.value?.chain().focus().unsetColor().run();
+    } else {
+      editor.value?.chain().focus().setColor('#f00').run();
+    }
+  }
+}
+
 function _toggleEditing() {
   isEditable.value = !isEditable.value;
 
@@ -201,6 +300,15 @@ onMounted(() => {
       Heading.configure({
         levels: [1, 2, 3],
       }),
+      Bold,
+      Italic,
+      Strike,
+      Underline,
+      Link,
+      Code,
+      Highlight.configure({ multicolor: true }),
+      Superscript,
+      Subscript,
       Blockquote,
       BulletList,
       OrderedList,
@@ -273,6 +381,9 @@ onMounted(() => {
         controls: false,
         nocookie: true,
       }),
+      TextStyle,
+      BackgroundColor,
+      Color,
     ],
     onCreate: ({ editor: currentEditor }) => {
       migrateMathStrings(currentEditor);
@@ -301,6 +412,42 @@ const actions = [
     action: () => toggleHeading(3),
   },
   {
+    icon: BoldIcon,
+    action: toggleBold,
+  },
+  {
+    icon: ItalicIcon,
+    action: toggleItalic,
+  },
+  {
+    icon: StrikethroughIcon,
+    action: toggleStrike,
+  },
+  {
+    icon: UnderlineIcon,
+    action: toggleUnderline,
+  },
+  {
+    icon: Link2Icon,
+    action: toggleLink,
+  },
+  {
+    icon: CodeIcon,
+    action: toggleCode,
+  },
+  {
+    icon: HighlighterIcon,
+    action: toggleHighlight,
+  },
+  {
+    icon: SuperscriptIcon,
+    action: toggleSuperscript,
+  },
+  {
+    icon: SubscriptIcon,
+    action: toggleSubscript,
+  },
+  {
     icon: Quote,
     action: toggleBlockquote,
   },
@@ -313,7 +460,7 @@ const actions = [
     action: toggleOrderedList,
   },
   {
-    icon: Code,
+    icon: Code2Icon,
     action: toggleCodeBlock,
   },
   {
@@ -343,6 +490,14 @@ const actions = [
   {
     icon: YoutubeIcon,
     action: addVideo,
+  },
+  {
+    icon: PaintbrushIcon,
+    action: toggleBackgroundColor,
+  },
+  {
+    icon: BrushIcon,
+    action: toggleTextColor,
   },
 ];
 </script>

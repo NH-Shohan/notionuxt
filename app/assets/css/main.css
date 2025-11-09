@@ -176,6 +176,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-normal dark:font-extralight;
+    @apply bg-background text-foreground font-normal dark:font-light;
   }
 }

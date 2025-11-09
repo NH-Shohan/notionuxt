@@ -21,6 +21,30 @@
     margin-bottom: 0.5rem;
   }
 
+  /* Code and preformatted text styles */
+  code {
+    background-color: var(--secondary);
+    border-radius: 0.4rem;
+    color: var(--secondary-foreground);
+    font-size: 0.85rem;
+    padding: 0.25em 0.3em;
+  }
+
+  /* highlight styles */
+  mark {
+    background-color: #faf594;
+    border-radius: 0.2rem;
+    box-decoration-break: clone;
+    padding: 0.1rem 0.3rem;
+  }
+
+  /* Link styles */
+  a {
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
   /* Blockquote styles */
   blockquote {
     border-left: 3px solid var(--color-secondary);
