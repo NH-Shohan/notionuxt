@@ -6,19 +6,24 @@
   h1 {
     font-size: 2rem;
     font-weight: 600;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
   }
 
   h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-block: 0.5rem;
   }
 
   h3 {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+  }
+
+  p {
+    margin-bottom: 0.25rem;
   }
 
   /* Code and preformatted text styles */
@@ -366,12 +371,19 @@
   ul,
   ol {
     padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
 
     li p {
       margin-top: 0.25em;
       margin-bottom: 0.25em;
     }
+  }
+  ul:first-child,
+  ol:first-child {
+    margin: 1rem 1rem 1rem 0.4rem;
+  }
+  ul:not(:first-child),
+  ol:not(:first-child) {
+    margin: 0.75rem 0 1rem 0;
   }
 
   /* Task list specific styles */
@@ -459,4 +471,73 @@ div[contenteditable='true'] {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+::selection {
+  background-color: #70cff850;
+}
+
+/* .ProseMirror {
+  > * {
+    margin-left: 1rem;
+  }
+
+  .ProseMirror-widget * {
+    margin-top: auto;
+  }
+} */
+
+.ProseMirror-noderangeselection {
+  *::selection {
+    background: transparent;
+  }
+
+  * {
+    caret-color: transparent;
+  }
+}
+
+.ProseMirror-selectednode,
+.ProseMirror-selectednoderange {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    content: '';
+    top: -0.15rem;
+    left: -0.25rem;
+    right: -0.25rem;
+    bottom: -0.15rem;
+    background-color: #70cff850;
+    border-radius: 0.2rem;
+  }
+}
+
+/* Drag Handle styles */
+.drag-handle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1.25rem;
+  margin-top: 0.2rem;
+  margin-right: 0.1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: grab;
+  background: var(--muted);
+  color: var(--secondary-foreground);
+  border-radius: 0.25rem;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
 }
