@@ -47,7 +47,8 @@ onUnmounted(() => {
 });
 
 async function toggleTheme() {
-  if (!buttonRef.value) return;
+  if (!buttonRef.value)
+    return;
 
   await document.startViewTransition(() => {
     const newTheme = !isDark.value;
