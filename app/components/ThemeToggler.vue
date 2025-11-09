@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
 import { Moon, Sun } from 'lucide-vue-next';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -16,9 +16,9 @@ const isDark = ref(false);
 const buttonRef = ref<HTMLButtonElement | null>(null);
 let observer: MutationObserver | null = null;
 
-const updateTheme = () => {
+function updateTheme() {
   isDark.value = document.documentElement.classList.contains('dark');
-};
+}
 
 onMounted(() => {
   // Initialize theme from localStorage
@@ -46,7 +46,7 @@ onUnmounted(() => {
   }
 });
 
-const toggleTheme = async () => {
+async function toggleTheme() {
   if (!buttonRef.value) return;
 
   await document.startViewTransition(() => {
@@ -71,7 +71,7 @@ const toggleTheme = async () => {
       pseudoElement: '::view-transition-new(root)',
     }
   );
-};
+}
 </script>
 
 <template>
@@ -81,8 +81,16 @@ const toggleTheme = async () => {
     :class="cn('cursor-pointer', props.class)"
     @click="toggleTheme"
   >
-    <Moon v-if="isDark" />
-    <Sun v-else />
+    <Moon
+      v-if="isDark"
+      stroke-width="1.5"
+      class="size-5"
+    />
+    <Sun
+      v-else
+      stroke-width="1.5"
+      class="size-5"
+    />
 
     <span class="sr-only">Toggle theme</span>
   </button>
