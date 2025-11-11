@@ -10,6 +10,11 @@ export default {
       type: Function,
       required: true,
     },
+
+    editor: {
+      type: Object,
+      required: true,
+    },
   },
 
   data() {
@@ -60,7 +65,7 @@ export default {
       const item = this.items[index];
 
       if (item) {
-        this.command({ id: item });
+        this.command({ name: item.name });
       }
     },
   },
@@ -69,37 +74,36 @@ export default {
 
 <template>
   <div class="dropdown-menu">
-    <template v-if="items.length">
-      <button
-        v-for="(item, index) in items"
-        :key="index"
-        :class="{ 'is-selected': index === selectedIndex }"
-        @click="selectItem(index)"
-      >
-        {{ item }}
-      </button>
-    </template>
-    <div
-      v-else
-      class="item"
+    <button
+      v-for="(item, index) in items"
+      :key="index"
+      :class="{ 'is-selected': index === selectedIndex }"
+      @click="selectItem(index)"
     >
-      No result
-    </div>
+      <img
+        v-if="item.fallbackImage"
+        :src="item.fallbackImage"
+        align="absmiddle"
+      />
+      <template v-else>
+        {{ item.emoji }}
+      </template>
+      :{{ item.name }}:
+    </button>
   </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 /* Dropdown menu */
 .dropdown-menu {
   background: var(--background);
-  border: 1px solid var(--border);
+  border: 1px solid var(--secondary);
   border-radius: 0.7rem;
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
   overflow: auto;
-  padding: 0.4rem;
+  padding: 0.5rem 0.4rem;
   position: relative;
 
   button {
@@ -109,18 +113,23 @@ export default {
     gap: 0.25rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    cursor: pointer;
     text-align: left;
     width: 100%;
 
     &:hover,
     &:hover.is-selected {
-      background-color: var(--accent);
+      background-color: var(--secondary);
     }
 
     &.is-selected {
-      background-color: var(--accent);
+      background-color: var(--secondary);
+    }
+
+    img {
+      height: 1em;
+      width: 1em;
     }
   }
 }
 </style>
+

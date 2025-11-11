@@ -8,10 +8,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div
-    data-slot="dialog-header"
-    :class="cn('flex flex-col gap-2 text-center sm:text-left', props.class)"
+  <kbd
+    data-slot="kbd-group"
+    :class="cn('inline-flex items-center gap-1', props.class)"
   >
     <slot />
-  </div>
+  </kbd>
 </template>

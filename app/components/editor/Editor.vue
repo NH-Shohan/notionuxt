@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import type { Editor as EditorType } from '@tiptap/vue-3';
-import type { Ref } from 'vue';
-import { DragHandle } from '@tiptap/extension-drag-handle-vue-3';
-import { EditorContent } from '@tiptap/vue-3';
-import { useEditor } from '@/composables/useEditor';
-import { useEditorActions } from '@/composables/useEditorActions';
-import { useEditorToolbar } from '@/composables/useEditorToolbar';
-import 'katex/dist/katex.min.css';
+import type { Editor as EditorType } from '@tiptap/vue-3'
+import type { Ref } from 'vue'
+import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
+import { EditorContent } from '@tiptap/vue-3'
+import { useEditor } from '@/composables/useEditor'
+import { useEditorActions } from '@/composables/useEditorActions'
+import { useEditorToolbar } from '@/composables/useEditorToolbar'
+import FloatingToolbar from './components/FloatingToolbar.vue'
+import 'katex/dist/katex.min.css'
 
-const { editor } = useEditor();
-const editorActions = useEditorActions(editor as Ref<EditorType | null>);
-const { toolbarActions } = useEditorToolbar(editorActions);
+const { editor } = useEditor()
+const editorActions = useEditorActions(editor as Ref<EditorType | null>)
+const { toolbarActions } = useEditorToolbar(editorActions)
 </script>
 
 <template>
@@ -32,8 +33,14 @@ const { toolbarActions } = useEditorToolbar(editorActions);
       :editor="editor as EditorType"
       :compute-position-config="{ placement: 'left-start', strategy: 'absolute' }"
     >
-      <div class="drag-handle-icon">⠿</div>
+      <div class="drag-handle-icon">
+        ⠿
+      </div>
     </DragHandle>
     <EditorContent :editor="editor as EditorType" />
+    <FloatingToolbar
+      v-if="editor"
+      :editor="editor as EditorType"
+    />
   </div>
 </template>

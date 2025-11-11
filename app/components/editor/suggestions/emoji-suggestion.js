@@ -1,7 +1,7 @@
 import { computePosition } from '@floating-ui/dom'
 import { VueRenderer } from '@tiptap/vue-3'
 
-import EmojiList from './EmojiList.vue'
+import EmojiList from '../components/EmojiList.vue'
 
 export default {
   items: ({ editor, query }) => {
@@ -76,3 +76,4 @@ export default {
     }
   },
 }
+

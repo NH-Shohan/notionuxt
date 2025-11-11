@@ -3,6 +3,18 @@
 @import 'tw-animate-css';
 @import './editor.css';
 
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

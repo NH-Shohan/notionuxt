@@ -26,3 +26,4 @@ function updateChecked(checked: boolean) {
     <NodeViewContent as="div" />
   </NodeViewWrapper>
 </template>
+
