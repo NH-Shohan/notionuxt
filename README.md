@@ -1,75 +1,320 @@
-# Nuxt Minimal Starter
+# [notionuxt](https://notionuxt.vercel.app)
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A modern, beautiful Notion-style rich text editor built with Nuxt.js, featuring collaborative editing capabilities and extensive formatting options.
 
-## Setup
+![notionuxt Preview](https://img.shields.io/badge/Nuxt-4.2.1-00DC82?style=flat&logo=nuxt.js)
+![Vue](https://img.shields.io/badge/Vue-3.5.24-4FC08D?style=flat&logo=vue.js)
+![TipTap](https://img.shields.io/badge/TipTap-3.10.5-000000?style=flat)
+![Yjs](https://img.shields.io/badge/Yjs-13.6.27-000000?style=flat)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Make sure to install dependencies:
+## ✨ Features
 
-```bash
-# npm
-npm install
+### Rich Text Editing
 
-# pnpm
-pnpm install
+- **Headings** (H1, H2, H3) with proper hierarchy
+- **Text Formatting**: Bold, italic, underline, strikethrough, highlight, superscript, subscript
+- **Lists**: Bullet lists, numbered lists, and nested task lists with checkboxes
+- **Code Blocks**: Syntax highlighting for multiple languages (JavaScript, TypeScript, HTML, CSS)
+- **Blockquotes** and horizontal rules
+- **Text Alignment**: Left, center, right, justify
+- **Typography**: Smart quotes, dashes, and ellipses
 
-# yarn
-yarn install
+### Media & Embeds
 
-# bun
-bun install
+- **Image Upload**: Drag & drop or paste images with resize capabilities
+- **YouTube Embeds**: Embed videos with customizable controls
+- **File Handling**: Support for PNG, JPEG, GIF, and WebP images
+
+### Interactive Elements
+
+- **Mentions**: @mention system with suggestions
+- **Emojis**: GitHub emoji picker with emoticon support
+- **Slash Commands**: Quick access to all editor features via `/` commands
+- **Collapsible Details**: Expandable content sections
+- **Mathematics**: LaTeX math expressions (inline and block)
+- **Drag & Drop**: Reorder content blocks with drag handles
+
+### Collaboration & Storage
+
+- **Real-time Collaboration**: Powered by Yjs for multi-user editing
+- **Auto-save**: Content automatically saved to localStorage
+- **Persistent State**: Content restored on page reload
+
+### UI/UX
+
+- **Modern Design**: Clean, minimal interface with shadcn-vue components
+- **Dark/Light Theme**: Theme toggle with system preference detection
+- **Responsive**: Works seamlessly on desktop and mobile devices
+- **Keyboard Shortcuts**: Full keyboard navigation support
+- **Floating Toolbar**: Context-aware formatting toolbar
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm (recommended) or npm
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/nh-shohan/notionuxt.git
+   cd notionuxt
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Start development server**
+
+   ```bash
+   pnpm dev
+   ```
+
+4. **Open your browser**
+   Navigate to `http://localhost:3000`
+
+## 📁 Project Structure
+
+```
+notionuxt/
+├── app/
+│   ├── app.vue                 # Main application component
+│   ├── assets/css/             # Stylesheets
+│   │   ├── main.css           # Main Tailwind CSS
+│   │   └── editor.css         # Editor-specific styles
+│   ├── components/
+│   │   ├── editor/            # Editor components
+│   │   │   ├── Editor.vue     # Main editor component
+│   │   │   ├── components/    # Editor sub-components
+│   │   │   │   ├── FloatingToolbar.vue
+│   │   │   │   ├── ColorPicker.vue
+│   │   │   │   ├── EmojiList.vue
+│   │   │   │   ├── MentionList.vue
+│   │   │   │   ├── SlashCommandList.vue
+│   │   │   │   └── TaskItemComponent.vue
+│   │   │   ├── dialogs/       # Editor dialogs
+│   │   │   ├── extensions/    # Custom TipTap extensions
+│   │   │   └── suggestions/   # Suggestion systems
+│   │   ├── ui/                # Reusable UI components (shadcn-vue)
+│   │   └── ThemeToggler.vue   # Theme toggle component
+│   ├── composables/           # Vue composables
+│   │   ├── useEditor.ts       # Main editor logic
+│   │   ├── useEditorActions.ts # Editor actions
+│   │   ├── useEditorExtensions.ts # TipTap extensions
+│   │   ├── useEditorToolbar.ts # Toolbar logic
+│   │   └── useBodyScrollLock.ts # Scroll lock utility
+│   ├── lib/
+│   │   └── utils.ts           # Utility functions
+│   └── plugins/
+│       └── ssr-width.ts       # SSR width plugin
+├── components.json            # shadcn-vue configuration
+├── nuxt.config.ts             # Nuxt configuration
+├── package.json               # Dependencies and scripts
+└── tsconfig.json              # TypeScript configuration
 ```
 
-## Development Server
+## 🛠 Tech Stack
 
-Start the development server on `http://localhost:3000`:
+### Core Framework
 
-```bash
-# npm
-npm run dev
+- **Nuxt 4** - Full-stack Vue.js framework
+- **Vue 3** - Progressive JavaScript framework
+- **TypeScript** - Type-safe JavaScript
 
-# pnpm
-pnpm dev
+### Editor Engine
 
-# yarn
-yarn dev
+- **TipTap 3** - Headless editor framework for Vue
+- **Yjs** - CRDT for real-time collaboration
+- **ProseMirror** - Rich text editing engine
 
-# bun
-bun run dev
+### UI & Styling
+
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **shadcn-vue** - Modern Vue component library
+- **Lucide Icons** - Beautiful icon set
+- **Reka UI** - Vue component library
+
+### Development Tools
+
+- **ESLint** - Code linting
+- **Husky** - Git hooks
+- **Vite** - Fast build tool
+
+## 🎯 Usage
+
+### Basic Editing
+
+1. Start typing to create paragraphs
+2. Use `/` to access slash commands for different content types
+3. Select text and use the floating toolbar for formatting
+4. Drag the handle (⠿) on the left to reorder blocks
+
+### Keyboard Shortcuts
+
+- `Ctrl/Cmd + B` - Bold
+- `Ctrl/Cmd + I` - Italic
+- `Ctrl/Cmd + U` - Underline
+- `Ctrl/Cmd + Shift + X` - Strikethrough
+- `Ctrl/Cmd + Shift + 7` - Numbered list
+- `Ctrl/Cmd + Shift + 8` - Bullet list
+- `Ctrl/Cmd + Shift + 9` - Blockquote
+
+### Slash Commands
+
+Type `/` followed by:
+
+- `/h1`, `/h2`, `/h3` - Headings
+- `/code` - Code block
+- `/image` - Image upload
+- `/youtube` - YouTube embed
+- `/math` - Math expression
+- `/todo` - Task list
+- `/quote` - Blockquote
+- `/divider` - Horizontal rule
+
+### Collaborative Editing
+
+The editor supports real-time collaboration via Yjs. Multiple users can edit the same document simultaneously with conflict-free replicated data types.
+
+## 🔧 Configuration
+
+### Nuxt Configuration
+
+Key settings in `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  ssr: false, // Client-side only for editor functionality
+  modules: ['@nuxt/eslint', 'shadcn-nuxt'],
+  vite: {
+    plugins: [tailwindcss()],
+  },
+})
 ```
 
-## Production
+### Editor Extensions
 
-Build the application for production:
+Customize editor features in `useEditorExtensions.ts`:
 
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+```typescript
+export function createEditorExtensions(editor, lowlight) {
+  return [
+    // Core extensions
+    Document,
+    Paragraph,
+    Text,
+    // Add or remove extensions as needed
+  ]
+}
 ```
 
-Locally preview production build:
+## 📱 Responsive Design
+
+The editor is fully responsive and works on:
+
+- **Desktop**: Full feature set with floating toolbar
+- **Tablet**: Adapted touch interactions
+- **Mobile**: Optimized mobile editing experience
+
+## 🎨 Customization
+
+### Themes
+
+Toggle between light and dark themes using the theme toggler in the top-right corner.
+
+### Styling
+
+Customize appearance by modifying:
+
+- `app/assets/css/main.css` - Main styles
+- `app/assets/css/editor.css` - Editor-specific styles
+- Tailwind configuration in `nuxt.config.ts`
+
+### Components
+
+Extend functionality by:
+
+- Adding new TipTap extensions
+- Creating custom Vue components
+- Modifying existing UI components
+
+## 🧪 Development
+
+### Available Scripts
 
 ```bash
-# npm
-npm run preview
+# Development
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm preview      # Preview production build
 
-# pnpm
-pnpm preview
+# Code Quality
+pnpm lint         # Run ESLint
+pnpm lint:fix     # Fix ESLint issues
 
-# yarn
-yarn preview
-
-# bun
-bun run preview
+# Setup
+pnpm postinstall  # Run after installation (nuxt prepare)
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### Adding New Features
+
+1. Create a new TipTap extension or Vue component
+2. Add it to the appropriate directory
+3. Import and configure in `useEditorExtensions.ts`
+4. Update the slash commands if needed
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
+3. **Make your changes** and test thoroughly
+4. **Run linting**: `pnpm lint:fix`
+5. **Commit your changes**: `git commit -m 'Add some feature'`
+6. **Push to the branch**: `git push origin feature/your-feature-name`
+7. **Open a Pull Request**
+
+### Guidelines
+
+- Follow Vue 3 Composition API patterns
+- Use TypeScript for type safety
+- Follow the existing code style
+- Add tests for new features
+- Update documentation as needed
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Author
+
+**Nahim Hossain Shohan**
+
+- GitHub: [@nh-shohan](https://github.com/nh-shohan)
+- LinkedIn: [Nahim Hossain Shohan](https://www.linkedin.com/in/nahim-hossain-shohan/)
+
+## 🙏 Acknowledgments
+
+- [TipTap](https://tiptap.dev/) - The headless editor framework
+- [Nuxt.js](https://nuxt.com/) - The Vue.js framework
+- [shadcn-vue](https://www.shadcn-vue.com/) - Beautiful Vue UI components
+- [Yjs](https://yjs.dev/) - Real-time collaboration framework
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+
+## 🔗 Links
+
+- [Live Demo](https://notionuxt.vercel.app)
+- [Issues](https://github.com/nh-shohan/notionuxt/issues)
+- [Discussions](https://github.com/nh-shohan/notionuxt/discussions)
+
+---
+
+Made with ❤️ and lots of ☕
