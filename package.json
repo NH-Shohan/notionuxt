@@ -1,7 +1,9 @@
 {
-  "name": "novel-editor",
+  "name": "notion-vue",
   "type": "module",
+  "version": "0.0.1",
   "private": true,
+  "description": "A modern and beautiful Notion-style editor with collaborative features built with Nuxt.",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
