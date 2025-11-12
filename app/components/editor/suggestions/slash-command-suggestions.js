@@ -190,11 +190,66 @@ export default {
         return
       }
 
+      // Set initial position immediately to avoid flickering
+      const initialTop = clientRect.bottom + 16
+      const initialLeft = clientRect.left
       Object.assign(component.element.style, {
         position: 'fixed',
-        left: `${clientRect.left}px`,
-        top: `${clientRect.bottom + 16}px`,
+        left: `${initialLeft}px`,
+        top: `${initialTop}px`,
         zIndex: '50',
+      })
+
+      // Use requestAnimationFrame to ensure element is rendered and dimensions are accurate, then refine position
+      requestAnimationFrame(() => {
+        if (!component || !component.element) {
+          return
+        }
+
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        const padding = 8 // Padding from viewport edges
+        const gap = 16 // Gap between cursor and menu
+
+        // Get actual menu dimensions
+        const menuWidth = component.element.offsetWidth || 320
+        const menuHeight = component.element.offsetHeight || 440
+
+        // Calculate initial position (below cursor, aligned to left)
+        let top = clientRect.bottom + gap
+        let left = clientRect.left
+
+        // Check if menu would go off the bottom
+        if (top + menuHeight > viewportHeight - padding) {
+          // Try to position above cursor
+          const topPosition = clientRect.top - menuHeight - gap
+          if (topPosition >= padding) {
+            top = topPosition
+          }
+          else {
+            // If can't fit above, position at bottom of viewport
+            top = Math.max(padding, viewportHeight - menuHeight - padding)
+          }
+        }
+
+        // Check if menu would go off the right
+        if (left + menuWidth > viewportWidth - padding) {
+          // Align to right edge of viewport
+          left = viewportWidth - menuWidth - padding
+        }
+
+        // Check if menu would go off the left
+        if (left < padding) {
+          // Align to left edge of viewport
+          left = padding
+        }
+
+        Object.assign(component.element.style, {
+          position: 'fixed',
+          left: `${left}px`,
+          top: `${top}px`,
+          zIndex: '50',
+        })
       })
     }
 

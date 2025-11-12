@@ -16,7 +16,7 @@ import {
   SuperscriptIcon,
   UnderlineIcon,
 } from 'lucide-vue-next'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BackgroundColorPicker from '@/components/editor/components/BackgroundColorPicker.vue'
 import TextColorPicker from '@/components/editor/components/TextColorPicker.vue'
 import LinkDialog from '@/components/editor/dialogs/LinkDialog.vue'
@@ -31,7 +31,7 @@ const props = defineProps<{
 const editorActions = useEditorActions(computed(() => props.editor))
 
 const show = ref(false)
-const position = ref({ top: 0, left: 0 })
+const position = ref({ top: 0, left: 0, transform: 'translateX(-50%)' })
 const linkDialogOpen = ref(false)
 const toolbarRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
@@ -108,12 +108,82 @@ function updatePosition() {
   const centerX = (start.left + end.left) / 2
   const centerY = Math.min(start.top, end.top)
 
+  // Set initial position and show toolbar
   position.value = {
     top: centerY - 46,
     left: centerX,
+    transform: 'translateX(-50%)',
   }
-
   show.value = true
+
+  // Wait for next tick to get toolbar dimensions and adjust position
+  nextTick(() => {
+    if (!toolbarRef.value || !show.value) {
+      return
+    }
+
+    const toolbarRect = toolbarRef.value.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const toolbarHeight = toolbarRect.height || 46
+    const toolbarWidth = toolbarRect.width || 200
+    const padding = 8 // Padding from viewport edges
+
+    // Calculate initial position (centered horizontally)
+    let top = centerY - toolbarHeight - 8 // 8px gap above selection
+    let left = centerX
+    let transform = 'translateX(-50%)' // Center horizontally
+
+    // Check if toolbar would go off the top
+    if (top < padding) {
+      // Position below selection instead
+      top = Math.max(start.bottom, end.bottom) + 8
+    }
+
+    // Check if toolbar would go off the bottom
+    if (top + toolbarHeight > viewportHeight - padding) {
+      // Try to position above, but if that doesn't work, position at top
+      const topPosition = centerY - toolbarHeight - 8
+      if (topPosition >= padding) {
+        top = topPosition
+      } else {
+        top = padding
+      }
+    }
+
+    // Check horizontal boundaries
+    const halfWidth = toolbarWidth / 2
+    const leftEdge = left - halfWidth
+    const rightEdge = left + halfWidth
+
+    // Check if toolbar would go off the right
+    if (rightEdge > viewportWidth - padding) {
+      // Adjust to fit within viewport, align to right edge
+      left = viewportWidth - padding - halfWidth
+      // If still too wide, remove centering transform and align to right
+      if (left - halfWidth < padding) {
+        left = viewportWidth - padding
+        transform = 'translateX(-100%)'
+      }
+    }
+
+    // Check if toolbar would go off the left
+    if (leftEdge < padding) {
+      // Adjust to fit within viewport, align to left edge
+      left = padding + halfWidth
+      // If still too wide, remove centering transform and align to left
+      if (left + halfWidth > viewportWidth - padding) {
+        left = padding
+        transform = 'translateX(0)'
+      }
+    }
+
+    position.value = {
+      top,
+      left,
+      transform,
+    }
+  })
 }
 
 let rafId: number | null = null
@@ -185,7 +255,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
       :style="{
         top: `${position.top}px`,
         left: `${position.left}px`,
-        transform: 'translateX(-20%)',
+        transform: position.transform,
       }"
     >
       <!-- Text Formatting -->
