@@ -211,9 +211,12 @@ function scrollToSelected() {
       const isFirstItem = selectedIndex.value === 0
       const isLastItem = selectedIndex.value === items.length - 1
 
-      // If on first item, scroll to top
+      // Add margin/offset for middle items
+      const marginOffset = 4
+
+      // If on first item, scroll to top with margin
       if (isFirstItem) {
-        scrollableContainer.scrollTop = 0
+        scrollableContainer.scrollTop = marginOffset
         return
       }
 
@@ -235,12 +238,12 @@ function scrollToSelected() {
 
       // Scroll down if item is below visible area
       if (itemBottom > containerBottom) {
-        const scrollAmount = itemBottom - containerBottom
+        const scrollAmount = itemBottom - containerBottom + marginOffset
         scrollableContainer.scrollTop += scrollAmount
       }
       // Scroll up if item is above visible area
       else if (itemTop < containerTop) {
-        const scrollAmount = containerTop - itemTop
+        const scrollAmount = containerTop - itemTop + marginOffset
         scrollableContainer.scrollTop -= scrollAmount
       }
     }
@@ -559,7 +562,8 @@ defineExpose({
         >
           <component
             :is="iconMap[item.icon]"
-            class="mr-1 h-4 w-4"
+            :stroke-width="1.75"
+            class="mr-1 size-4"
           />
           <span>{{ item.title }}</span>
           <template v-if="item.shortcut">

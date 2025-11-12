@@ -8,10 +8,10 @@
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--muted);
+  background: var(--secondary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--primary);
   border-radius: 4px;
 }
 
@@ -24,58 +24,44 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: rgb(245, 241, 230);
-  --foreground: rgb(74, 63, 53);
-  --card: rgb(255, 252, 245);
-  --card-foreground: rgb(74, 63, 53);
-  --popover: rgb(255, 252, 245);
-  --popover-foreground: rgb(74, 63, 53);
-  --primary: rgb(166, 124, 82);
-  --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(226, 216, 195);
-  --secondary-foreground: rgb(92, 77, 63);
-  --muted: rgb(236, 229, 216);
-  --muted-foreground: rgb(125, 107, 86);
-  --accent: rgb(212, 200, 170);
-  --accent-foreground: rgb(74, 63, 53);
-  --destructive: rgb(181, 74, 53);
-  --destructive-foreground: rgb(255, 255, 255);
-  --border: rgb(219, 208, 186);
-  --input: rgb(219, 208, 186);
-  --ring: rgb(166, 124, 82);
-  --chart-1: rgb(166, 124, 82);
-  --chart-2: rgb(141, 110, 76);
-  --chart-3: rgb(115, 90, 58);
-  --chart-4: rgb(179, 144, 111);
-  --chart-5: rgb(192, 160, 128);
-  --sidebar: rgb(236, 229, 216);
-  --sidebar-foreground: rgb(74, 63, 53);
-  --sidebar-primary: rgb(166, 124, 82);
-  --sidebar-primary-foreground: rgb(255, 255, 255);
-  --sidebar-accent: rgb(212, 200, 170);
-  --sidebar-accent-foreground: rgb(74, 63, 53);
-  --sidebar-border: rgb(219, 208, 186);
-  --sidebar-ring: rgb(166, 124, 82);
+  --radius: 0.75rem;
+  --background: oklch(0.91 0.048 83.6);
+  --foreground: oklch(0.41 0.077 78.9);
+  --card: oklch(0.92 0.042 83.6);
+  --card-foreground: oklch(0.41 0.077 74.3);
+  --popover: oklch(0.92 0.042 83.6);
+  --popover-foreground: oklch(0.41 0.077 74.3);
+  --primary: oklch(0.71 0.097 111.7);
+  --primary-foreground: oklch(0.98 0.005 0);
+  --secondary: oklch(0.88 0.055 83.6);
+  --secondary-foreground: oklch(0.51 0.077 78.9);
+  --muted: oklch(0.86 0.064 83.7);
+  --muted-foreground: oklch(0.51 0.077 74.3);
+  --accent: oklch(0.86 0.055 83.6);
+  --accent-foreground: oklch(0.26 0.016 0);
+  --destructive: oklch(0.63 0.24 29.2);
+  --border: oklch(0.74 0.063 80.8);
+  --input: oklch(0.74 0.063 80.8);
+  --ring: oklch(0.51 0.077 74.3);
+  --chart-1: oklch(0.66 0.19 41.6);
+  --chart-2: oklch(0.68 0.16 184.9);
+  --chart-3: oklch(0.48 0.09 210.9);
+  --chart-4: oklch(0.85 0.19 85.4);
+  --chart-5: oklch(0.74 0.19 66.3);
+  --sidebar: oklch(0.87 0.059 83.7);
+  --sidebar-foreground: oklch(0.41 0.077 78.9);
+  --sidebar-primary: oklch(0.26 0.016 0);
+  --sidebar-primary-foreground: oklch(0.98 0.005 0);
+  --sidebar-accent: oklch(0.83 0.058 83.6);
+  --sidebar-accent-foreground: oklch(0.26 0.016 0);
+  --sidebar-border: oklch(0.91 0.005 0);
+  --sidebar-ring: oklch(0.71 0.005 0);
+  --primary-border: oklch(0.59 0.096 111.8);
+  --destructive-foreground: oklch(0.97 0.018 0);
+  --destructive-border: oklch(0.43 0.24 29.2);
   --font-sans: Inter;
   --font-serif: Almendra, ui-serif, serif;
   --font-mono: Roboto Mono, ui-monospace, monospace;
-  --radius: 0.75rem;
-  --shadow-x: 0px;
-  --shadow-y: 0px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0;
-  --shadow-color: #3a332c00;
-  --shadow-2xs: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.1);
-  --shadow-xs: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.1);
-  --shadow-sm: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.2), 0px 1px 2px -1px hsl(30 13.7255% 20% / 0.2);
-  --shadow: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.2), 0px 1px 2px -1px hsl(30 13.7255% 20% / 0.2);
-  --shadow-md: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.2), 0px 2px 4px -1px hsl(30 13.7255% 20% / 0.2);
-  --shadow-lg: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.2), 0px 4px 6px -1px hsl(30 13.7255% 20% / 0.2);
-  --shadow-xl: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.2), 0px 8px 10px -1px hsl(30 13.7255% 20% / 0.2);
-  --shadow-2xl: 0px 0px 5px 0px hsl(30 13.7255% 20% / 0.5);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
 }
 
 .dark {
@@ -190,5 +176,19 @@
   }
   body {
     @apply bg-background text-foreground font-normal dark:font-light font-sans;
+  }
+  .texture {
+    background-image: url(https://matsu-theme.vercel.app/texture.jpg);
+    background-size: 100% 100%;
+    background-repeat: repeat;
+    opacity: 0.1;
+    mix-blend-mode: multiply;
+    isolation: isolate;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    pointer-events: none;
+    z-index: 0;
   }
 }

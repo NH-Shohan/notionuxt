@@ -16,18 +16,18 @@ export const textColors = [
 ]
 
 export const backgroundColors = [
-  '#00000088', // black
-  '#f5f5f588', // very light grey
-  '#80808088', // grey
-  '#40404088', // dark grey
-  '#d4a57488', // light brown
-  '#b8860b88', // orange-brown
-  '#9a9a0088', // olive green
-  '#16653488', // dark green
-  '#1e3a8a88', // dark blue
-  '#581c8788', // dark purple
-  '#9f123988', // dark pink/magenta
-  '#7f1d1d88', // dark red/maroon
+  '#00000055', // black
+  '#ffffff55', // white
+  '#d4d4d455', // light grey
+  '#80808055', // grey
+  '#d4a57455', // light brown/tan
+  '#ff950055', // orange
+  '#ffd70055', // yellow
+  '#4ade8055', // green
+  '#60a5fa55', // blue
+  '#a78bfa55', // purple
+  '#f472b655', // pink
+  '#ef444455', // red
 ]
 
 export function useColorPicker(type: 'text' | 'background') {

@@ -81,7 +81,7 @@ export function createEditorExtensions(
     DetailsContent,
     Placeholder.configure({
       includeChildren: true,
-      placeholder: 'Press / to start...',
+      placeholder: 'Press "/" to start...',
     }),
     SlashCommand,
     HorizontalRule,
