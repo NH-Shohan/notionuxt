@@ -19,10 +19,10 @@ import {
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BackgroundColorPicker from '@/components/editor/components/BackgroundColorPicker.vue'
 import TextColorPicker from '@/components/editor/components/TextColorPicker.vue'
-import LinkDialog from '@/components/editor/dialogs/LinkDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useEditorActions } from '@/composables/useEditorActions'
+import CommonDialog from '~/components/editor/dialogs/CommonDialog.vue'
 
 const props = defineProps<{
   editor: EditorType
@@ -43,15 +43,21 @@ function closeToolbar() {
 
 // Handle outside click
 onClickOutside(toolbarRef, (event) => {
-  // Don't close if clicking inside the editor
-  if (show.value && !props.editor.view.dom.contains(event.target as Node)) {
+  // Don't close if clicking inside the editor or if a dialog is open
+  if (show.value && !linkDialogOpen.value && !props.editor.view.dom.contains(event.target as Node)) {
     closeToolbar()
   }
 })
 
 // Handle ESC key
 onKeyStroke('Escape', (e) => {
-  if (show.value) {
+  if (linkDialogOpen.value) {
+    // If dialog is open, close dialog first
+    linkDialogOpen.value = false
+    e.preventDefault()
+  }
+  else if (show.value) {
+    // Otherwise close toolbar
     e.preventDefault()
     closeToolbar()
   }
@@ -146,7 +152,8 @@ function updatePosition() {
       const topPosition = centerY - toolbarHeight - 8
       if (topPosition >= padding) {
         top = topPosition
-      } else {
+      }
+      else {
         top = padding
       }
     }
@@ -308,7 +315,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
       <BackgroundColorPicker :editor="editor" />
 
       <!-- Dialogs -->
-      <LinkDialog
+      <CommonDialog
         v-model:open="linkDialogOpen"
         :editor="editor"
         :editor-actions="editorActions"

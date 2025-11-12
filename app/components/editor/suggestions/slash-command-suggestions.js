@@ -118,12 +118,9 @@ function getSuggestionItems() {
       title: 'Image',
       description: 'Insert an image',
       icon: 'Image',
-      command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).run()
-        const url = prompt('Enter image URL:', '') ?? ''
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run()
-        }
+      command: ({ editor: _editor, range: _range }) => {
+        // Dialog will be handled by SlashCommandList
+        // Don't execute here, just let the command be called
       },
     },
     {
@@ -131,12 +128,9 @@ function getSuggestionItems() {
       title: 'Video',
       description: 'Embed a YouTube video',
       icon: 'Youtube',
-      command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).run()
-        const url = prompt('Enter YouTube URL:', '') ?? ''
-        if (url) {
-          editor.chain().focus().setYoutubeVideo({ src: url }).run()
-        }
+      command: ({ editor: _editor, range: _range }) => {
+        // Dialog will be handled by SlashCommandList
+        // Don't execute here, just let the command be called
       },
     },
     {
@@ -144,12 +138,9 @@ function getSuggestionItems() {
       title: 'Inline math',
       description: 'Insert inline math equation',
       icon: 'Sigma',
-      command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).run()
-        const latex = prompt('Enter inline math expression:', '') ?? ''
-        if (latex) {
-          editor.chain().focus().insertInlineMath({ latex }).run()
-        }
+      command: ({ editor: _editor, range: _range }) => {
+        // Dialog will be handled by SlashCommandList
+        // Don't execute here, just let the command be called
       },
     },
     {
@@ -157,12 +148,9 @@ function getSuggestionItems() {
       title: 'Block math',
       description: 'Insert block math equation',
       icon: 'SquareSigma',
-      command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).run()
-        const latex = prompt('Enter block math expression:', '') ?? ''
-        if (latex) {
-          editor.chain().focus().insertBlockMath({ latex }).run()
-        }
+      command: ({ editor: _editor, range: _range }) => {
+        // Dialog will be handled by SlashCommandList
+        // Don't execute here, just let the command be called
       },
     },
   ]
@@ -258,6 +246,7 @@ export default {
         component = new VueRenderer(SlashCommandList, {
           props,
           editor: props.editor,
+          range: props.range,
         })
 
         document.body.appendChild(component.element)
@@ -265,7 +254,10 @@ export default {
       },
 
       onUpdate(props) {
-        component.updateProps(props)
+        component.updateProps({
+          ...props,
+          range: props.range,
+        })
         repositionComponent(props.clientRect())
       },
 

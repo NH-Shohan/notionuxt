@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { LinkDialogConfig } from '@/components/editor/dialogs/CommonDialog.vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import {
   ChevronRight,
@@ -20,8 +21,10 @@ import {
   YoutubeIcon,
 } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import CommonDialog from '@/components/editor/dialogs/CommonDialog.vue'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Kbd, KbdGroup } from '@/components/ui/kbd'
+import { useEditorActions } from '@/composables/useEditorActions'
 
 export interface SlashCommandItem {
   id: string
@@ -37,6 +40,7 @@ const props = defineProps<{
   command: (item: SlashCommandItem) => void
   editor: any
   query?: string
+  range?: any
 }>()
 
 const iconMap: Record<string, any> = {
@@ -64,6 +68,23 @@ const searchQuery = ref(props.query || '')
 const commandRef = ref<HTMLElement | null>(null)
 const commandListRef = ref<HTMLElement | null>(null)
 const isKeyboardNavigation = ref(false) // Track if user is using keyboard
+
+// Dialog state
+const dialogOpen = ref(false)
+const dialogConfig = ref<LinkDialogConfig>({ type: 'link' })
+const pendingCommand = ref<SlashCommandItem | null>(null)
+const pendingRange = ref<any>(null)
+const editorActions = useEditorActions(computed(() => props.editor))
+
+// Reset dialog state when dialog closes
+watch(dialogOpen, (isOpen) => {
+  if (!isOpen) {
+    // Reset state when dialog closes
+    pendingCommand.value = null
+    pendingRange.value = null
+    dialogConfig.value = { type: 'link' }
+  }
+})
 
 // Prevent focus on mount and whenever items change
 onMounted(() => {
@@ -288,7 +309,156 @@ function onKeyDown({ event }: { event: KeyboardEvent }) {
 function selectItem(index: number) {
   const item = props.items[index]
   if (item) {
-    props.command(item)
+    // Check if this command needs a dialog
+    if (item.id === 'image' || item.id === 'video' || item.id === 'inlineMath' || item.id === 'blockMath') {
+      // If a dialog is already open, close it first
+      if (dialogOpen.value) {
+        dialogOpen.value = false
+        // Use nextTick to ensure the dialog closes before opening a new one
+        nextTick(() => {
+          openDialogForItem(item)
+        })
+      }
+      else {
+        openDialogForItem(item)
+      }
+    }
+    else {
+      // Execute command directly
+      props.command(item)
+    }
+  }
+}
+
+function openDialogForItem(item: SlashCommandItem) {
+  // Store the command and range for later execution
+  pendingCommand.value = item
+  pendingRange.value = props.range
+
+  // Open appropriate dialog
+  if (item.id === 'image') {
+    dialogConfig.value = { type: 'image' }
+  }
+  else if (item.id === 'video') {
+    dialogConfig.value = { type: 'youtube' }
+  }
+  else if (item.id === 'inlineMath') {
+    dialogConfig.value = { type: 'inlineMath' }
+  }
+  else if (item.id === 'blockMath') {
+    dialogConfig.value = { type: 'blockMath' }
+  }
+
+  dialogOpen.value = true
+}
+
+function handleDialogSave(value: string, file?: File) {
+  if (!pendingCommand.value) {
+    // Reset dialog state and close
+    dialogOpen.value = false
+    return
+  }
+
+  const item = pendingCommand.value
+
+  // Convert file to data URL if it's a file upload
+  const finalUrl = value
+  if (file) {
+    // Convert file to data URL for immediate use
+    // In production, you'd upload the file to a server first
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string
+      executeCommandWithValue(item, dataUrl)
+    }
+    reader.readAsDataURL(file)
+    return
+  }
+
+  executeCommandWithValue(item, finalUrl)
+}
+
+function executeCommandWithValue(item: SlashCommandItem, value: string) {
+  const { editor } = props
+  const range = pendingRange.value
+
+  if (!value) {
+    // Close dialog and reset state
+    dialogOpen.value = false
+    pendingCommand.value = null
+    pendingRange.value = null
+    return
+  }
+
+  try {
+    // Execute the command based on type
+    if (item.id === 'image') {
+      if (range && isValidRange(editor, range)) {
+        // Delete the slash command range first, then insert image
+        editor.chain().focus().deleteRange(range).run()
+        editor.chain().focus().setImage({ src: value }).run()
+      }
+      else {
+        editor.chain().focus().setImage({ src: value }).run()
+      }
+    }
+    else if (item.id === 'video') {
+      if (range && isValidRange(editor, range)) {
+        // Delete the slash command range first, then insert video
+        editor.chain().focus().deleteRange(range).run()
+        editor.chain().focus().setYoutubeVideo({ src: value }).run()
+      }
+      else {
+        editor.chain().focus().setYoutubeVideo({ src: value }).run()
+      }
+    }
+    else if (item.id === 'inlineMath') {
+      if (range && isValidRange(editor, range)) {
+        // Delete the slash command range first, then insert inline math
+        editor.chain().focus().deleteRange(range).run()
+        editor.chain().focus().insertInlineMath({ latex: value }).run()
+      }
+      else {
+        editor.chain().focus().insertInlineMath({ latex: value }).run()
+      }
+    }
+    else if (item.id === 'blockMath') {
+      if (range && isValidRange(editor, range)) {
+        // Delete the slash command range first, then insert block math
+        editor.chain().focus().deleteRange(range).run()
+        editor.chain().focus().insertBlockMath({ latex: value }).run()
+      }
+      else {
+        editor.chain().focus().insertBlockMath({ latex: value }).run()
+      }
+    }
+  }
+  catch (error) {
+    console.warn('Error executing command:', error)
+    // Fallback: just insert without deleting range
+    if (item.id === 'inlineMath') {
+      editor.chain().focus().insertInlineMath({ latex: value }).run()
+    }
+    else if (item.id === 'blockMath') {
+      editor.chain().focus().insertBlockMath({ latex: value }).run()
+    }
+  }
+
+  // Close dialog and reset state
+  dialogOpen.value = false
+  pendingCommand.value = null
+  pendingRange.value = null
+}
+
+// Helper function to check if a range is valid
+function isValidRange(editor: any, range: any) {
+  try {
+    const { doc } = editor.state
+    const { from, to } = range
+    return from >= 0 && to <= doc.content.size && from <= to
+  }
+  catch {
+    return false
   }
 }
 
@@ -415,6 +585,15 @@ defineExpose({
       </CommandGroup>
     </CommandList>
   </Command>
+
+  <!-- Dialog for image, video, and math commands -->
+  <CommonDialog
+    v-model:open="dialogOpen"
+    :editor="editor"
+    :editor-actions="editorActions"
+    :config="dialogConfig"
+    :on-save="handleDialogSave"
+  />
 </template>
 
 <style scoped>
