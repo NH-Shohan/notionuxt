@@ -1,19 +1,26 @@
 <script setup lang="ts">
+import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import {
   ChevronRight,
-  Code2Icon, FileText,
+  Code2Icon,
+  FileText,
   Heading1,
   Heading2,
-  Heading3, ImageIcon,
-  Info, List,
+  Heading3,
+  ImageIcon,
+  Info,
+  List,
   ListChecks,
   ListOrdered,
-  Minus, Quote,
+  Minus,
+  Quote,
   SigmaIcon,
-  SquareSigma, TypeIcon, YoutubeIcon
+  SquareSigma,
+  TypeIcon,
+  YoutubeIcon,
 } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Kbd, KbdGroup } from '@/components/ui/kbd'
 
 export interface SlashCommandItem {
@@ -52,8 +59,67 @@ const iconMap: Record<string, any> = {
   Code2: Code2Icon,
 }
 
-const selectedIndex = ref(0)
+const selectedIndex = ref<number | null>(null) // Start with no selection
 const searchQuery = ref(props.query || '')
+const commandRef = ref<HTMLElement | null>(null)
+const commandListRef = ref<HTMLElement | null>(null)
+const isKeyboardNavigation = ref(false) // Track if user is using keyboard
+
+// Prevent focus on mount and whenever items change
+onMounted(() => {
+  nextTick(() => {
+    // Blur any focused element within the command component
+    if (commandRef.value) {
+      const focusedElement = commandRef.value.querySelector(':focus')
+      if (focusedElement) {
+        (focusedElement as HTMLElement).blur()
+      }
+      // Ensure editor stays focused
+      props.editor?.commands?.focus()
+    }
+  })
+})
+
+// Prevent focus when items change
+watch(
+  () => props.items,
+  () => {
+    selectedIndex.value = null
+    isKeyboardNavigation.value = false
+    nextTick(() => {
+      if (commandRef.value) {
+        const focusedElement = commandRef.value.querySelector(':focus')
+        if (focusedElement) {
+          (focusedElement as HTMLElement).blur()
+        }
+        props.editor?.commands?.focus()
+      }
+    })
+  },
+)
+
+// Handle focus events - immediately blur and refocus editor
+function handleFocus(event: FocusEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+  nextTick(() => {
+    (event.target as HTMLElement)?.blur()
+    props.editor?.commands?.focus()
+  })
+}
+
+// Handle outside click - just focus back to editor
+onClickOutside(commandRef, (event) => {
+  if (!props.editor?.view?.dom?.contains(event.target as Node)) {
+    props.editor?.commands?.focus()
+  }
+})
+
+// Handle ESC key - focus back to editor
+onKeyStroke('Escape', (e) => {
+  e.preventDefault()
+  props.editor?.commands?.focus()
+})
 
 watch(
   () => props.query,
@@ -84,28 +150,135 @@ const basicBlocks = computed(() => {
   return props.items.filter(item => blockIds.includes(item.id))
 })
 
+// Reset selected index when items change
 watch(
-  () => props.items,
+  () => basicBlocks.value,
   () => {
-    selectedIndex.value = 0
+    selectedIndex.value = null // Reset to no selection when items change
   },
 )
 
-watch(props.items, () => {
-  if (selectedIndex.value >= props.items.length) {
-    selectedIndex.value = Math.max(0, props.items.length - 1)
-  }
-})
+// Scroll selected item into view
+function scrollToSelected() {
+  if (selectedIndex.value === null)
+    return
+
+  nextTick(() => {
+    // Get the scrollable container - CommandList's root element is the ListboxContent with data-slot="command-list"
+    let scrollableContainer: HTMLElement | null = null
+
+    if (commandListRef.value) {
+      // Get the root DOM element of the CommandList component (which is the ListboxContent)
+      scrollableContainer = (commandListRef.value as any).$el as HTMLElement
+    }
+
+    // Fallback: try to get from commandRef
+    if (!scrollableContainer && commandRef.value) {
+      const commandElement = (commandRef.value as any).$el as HTMLElement
+      if (commandElement) {
+        scrollableContainer = commandElement.querySelector('[data-slot="command-list"]') as HTMLElement
+      }
+    }
+
+    if (!scrollableContainer)
+      return
+
+    const items = scrollableContainer.querySelectorAll('[data-slot="command-item"]')
+    const selectedItem = items[selectedIndex.value!] as HTMLElement
+
+    if (selectedItem && scrollableContainer) {
+      const isFirstItem = selectedIndex.value === 0
+      const isLastItem = selectedIndex.value === items.length - 1
+
+      // If on first item, scroll to top
+      if (isFirstItem) {
+        scrollableContainer.scrollTop = 0
+        return
+      }
+
+      // If on last item, scroll to bottom
+      if (isLastItem) {
+        scrollableContainer.scrollTop = scrollableContainer.scrollHeight
+        return
+      }
+
+      // Otherwise, keep item in view
+      const containerRect = scrollableContainer.getBoundingClientRect()
+      const itemRect = selectedItem.getBoundingClientRect()
+
+      // Calculate if item is outside visible area
+      const itemTop = itemRect.top
+      const itemBottom = itemRect.bottom
+      const containerTop = containerRect.top
+      const containerBottom = containerRect.bottom
+
+      // Scroll down if item is below visible area
+      if (itemBottom > containerBottom) {
+        const scrollAmount = itemBottom - containerBottom
+        scrollableContainer.scrollTop += scrollAmount
+      }
+      // Scroll up if item is above visible area
+      else if (itemTop < containerTop) {
+        const scrollAmount = containerTop - itemTop
+        scrollableContainer.scrollTop -= scrollAmount
+      }
+    }
+  })
+}
 
 function onKeyDown({ event }: { event: KeyboardEvent }) {
   if (event.key === 'Enter') {
     event.preventDefault()
-    selectItem(selectedIndex.value)
+    if (selectedIndex.value !== null) {
+      const selectedItem = basicBlocks.value[selectedIndex.value]
+      if (selectedItem) {
+        selectItem(getItemIndex(selectedItem))
+      }
+    }
+    return true
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    isKeyboardNavigation.value = true
+
+    if (basicBlocks.value.length > 0) {
+      if (selectedIndex.value === null) {
+        // Start from beginning if no selection
+        selectedIndex.value = 0
+      }
+      else {
+        // Move to next item
+        selectedIndex.value = (selectedIndex.value + 1) % basicBlocks.value.length
+      }
+      scrollToSelected()
+    }
+    return true
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    isKeyboardNavigation.value = true
+
+    if (basicBlocks.value.length > 0) {
+      if (selectedIndex.value === null) {
+        // Start from end if no selection
+        selectedIndex.value = basicBlocks.value.length - 1
+      }
+      else {
+        // Move to previous item
+        selectedIndex.value = selectedIndex.value <= 0
+          ? basicBlocks.value.length - 1
+          : selectedIndex.value - 1
+      }
+      scrollToSelected()
+    }
     return true
   }
 
   if (event.key === 'Escape') {
     event.preventDefault()
+    props.editor?.commands?.focus()
     return true
   }
 
@@ -121,6 +294,37 @@ function selectItem(index: number) {
 
 function getItemIndex(item: SlashCommandItem): number {
   return props.items.findIndex((i: SlashCommandItem) => i.id === item.id)
+}
+
+function isSelected(item: SlashCommandItem): boolean {
+  if (selectedIndex.value === null)
+    return false
+  const indexInBasicBlocks = basicBlocks.value.findIndex((i: SlashCommandItem) => i.id === item.id)
+  return indexInBasicBlocks === selectedIndex.value
+}
+
+function handleMouseEnter(item: SlashCommandItem) {
+  // Only update selection on hover if not in keyboard navigation mode
+  if (isKeyboardNavigation.value)
+    return
+
+  const indexInBasicBlocks = basicBlocks.value.findIndex((i: SlashCommandItem) => i.id === item.id)
+  selectedIndex.value = indexInBasicBlocks
+}
+
+function handleMouseLeave() {
+  // Optional: Keep the selection on mouse leave
+  // If you want to clear selection when mouse leaves, uncomment:
+  // if (!isKeyboardNavigation.value) {
+  //   selectedIndex.value = null
+  // }
+}
+
+function handleMouseMove() {
+  // When mouse moves, exit keyboard navigation mode
+  if (isKeyboardNavigation.value) {
+    isKeyboardNavigation.value = false
+  }
 }
 
 function parseShortcut(shortcut: string | undefined): string[] | null {
@@ -155,15 +359,20 @@ defineExpose({
 </script>
 
 <template>
-  <Command class="w-[320px] max-h-[440px] h-auto bg-background rounded-lg border absolute z-50">
-    <CommandInput
-      v-model="searchQuery"
-      placeholder="Search for a command"
-    />
-    <CommandList>
-      <CommandEmpty>
-        No results found.
-      </CommandEmpty>
+  <Command
+    ref="commandRef"
+    class="w-[320px] max-h-[440px] h-auto bg-background rounded-lg border absolute z-50"
+    :class="{ 'keyboard-navigation': isKeyboardNavigation }"
+    @focus="handleFocus"
+    @focusin="handleFocus"
+    @mousemove="handleMouseMove"
+  >
+    <CommandList
+      ref="commandListRef"
+      tabindex="-1"
+      @focus="handleFocus"
+      @focusin="handleFocus"
+    >
       <CommandGroup
         v-if="basicBlocks.length > 0"
         heading="Basic blocks"
@@ -172,7 +381,11 @@ defineExpose({
           v-for="item in basicBlocks"
           :key="item.id"
           :value="item.id"
+          :data-selected="isSelected(item)"
+          :class="{ 'bg-accent text-accent-foreground': isSelected(item) }"
           @select="selectItem(getItemIndex(item))"
+          @mouseenter="() => !isKeyboardNavigation && handleMouseEnter(item)"
+          @mouseleave="handleMouseLeave"
         >
           <component
             :is="iconMap[item.icon]"
@@ -203,3 +416,11 @@ defineExpose({
     </CommandList>
   </Command>
 </template>
+
+<style scoped>
+/* Disable hover styles when in keyboard navigation mode, but keep selection styles */
+.keyboard-navigation :deep([data-slot='command-item']:hover:not(.bg-accent)) {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+</style>

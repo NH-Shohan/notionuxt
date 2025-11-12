@@ -190,8 +190,6 @@ export default {
         return
       }
 
-      // Position directly below the cursor with minimal gap (2px)
-      // clientRect is already in viewport coordinates, so use fixed positioning
       Object.assign(component.element.style, {
         position: 'fixed',
         left: `${clientRect.left}px`,
@@ -216,9 +214,25 @@ export default {
         repositionComponent(props.clientRect())
       },
 
+      onKeyDown(props) {
+        if (props.event.key === 'Escape') {
+          document.body.removeChild(component.element)
+          component.destroy()
+          component = null
+          return true
+        }
+
+        return component.ref?.onKeyDown(props)
+      },
+
       onExit() {
-        component.destroy()
-        component = null
+        if (component && document.body.contains(component.element)) {
+          document.body.removeChild(component.element)
+        }
+        if (component) {
+          component.destroy()
+          component = null
+        }
       },
     }
   },

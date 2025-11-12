@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 
 export const textColors = [
+  '#000000', // black
   '#ffffff', // white
   '#d4d4d4', // light grey
+  '#808080', // grey
   '#d4a574', // light brown/tan
   '#ff9500', // orange
   '#ffd700', // yellow
@@ -14,16 +16,18 @@ export const textColors = [
 ]
 
 export const backgroundColors = [
-  '#f5f5f5', // very light grey
-  '#404040', // dark grey
-  '#d4a574', // light brown
-  '#b8860b', // orange-brown
-  '#9a9a00', // olive green
-  '#166534', // dark green
-  '#1e3a8a', // dark blue
-  '#581c87', // dark purple
-  '#9f1239', // dark pink/magenta
-  '#7f1d1d', // dark red/maroon
+  '#00000088', // black
+  '#f5f5f588', // very light grey
+  '#80808088', // grey
+  '#40404088', // dark grey
+  '#d4a57488', // light brown
+  '#b8860b88', // orange-brown
+  '#9a9a0088', // olive green
+  '#16653488', // dark green
+  '#1e3a8a88', // dark blue
+  '#581c8788', // dark purple
+  '#9f123988', // dark pink/magenta
+  '#7f1d1d88', // dark red/maroon
 ]
 
 export function useColorPicker(type: 'text' | 'background') {

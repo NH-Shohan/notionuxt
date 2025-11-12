@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Editor as EditorType } from '@tiptap/vue-3'
+import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
@@ -15,7 +16,7 @@ import {
   SuperscriptIcon,
   UnderlineIcon,
 } from 'lucide-vue-next'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BackgroundColorPicker from '@/components/editor/components/BackgroundColorPicker.vue'
 import TextColorPicker from '@/components/editor/components/TextColorPicker.vue'
 import LinkDialog from '@/components/editor/dialogs/LinkDialog.vue'
@@ -32,26 +33,81 @@ const editorActions = useEditorActions(computed(() => props.editor))
 const show = ref(false)
 const position = ref({ top: 0, left: 0 })
 const linkDialogOpen = ref(false)
+const toolbarRef = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+
+// Close toolbar
+function closeToolbar() {
+  show.value = false
+}
+
+// Handle outside click
+onClickOutside(toolbarRef, (event) => {
+  // Don't close if clicking inside the editor
+  if (show.value && !props.editor.view.dom.contains(event.target as Node)) {
+    closeToolbar()
+  }
+})
+
+// Handle ESC key
+onKeyStroke('Escape', (e) => {
+  if (show.value) {
+    e.preventDefault()
+    closeToolbar()
+  }
+})
+
+// Define toolbar buttons configuration
+const formatButtons = [
+  { icon: BoldIcon, action: () => editorActions.toggleBold(), active: 'bold' },
+  { icon: ItalicIcon, action: () => editorActions.toggleItalic(), active: 'italic' },
+  { icon: UnderlineIcon, action: () => editorActions.toggleUnderline(), active: 'underline' },
+] as const
+
+const styleButtons = [
+  { icon: StrikethroughIcon, action: () => editorActions.toggleStrike(), active: 'strike' },
+  { icon: CodeIcon, action: () => editorActions.toggleCode(), active: 'code' },
+  { icon: HighlighterIcon, action: () => editorActions.toggleHighlight(), active: 'highlight' },
+  { icon: SuperscriptIcon, action: () => editorActions.toggleSuperscript(), active: 'superscript' },
+  { icon: SubscriptIcon, action: () => editorActions.toggleSubscript(), active: 'subscript' },
+  { icon: Link2Icon, action: () => linkDialogOpen.value = true, active: null },
+] as const
+
+const alignButtons = [
+  { icon: AlignLeftIcon, action: () => editorActions.setTextAlign('left'), align: 'left' },
+  { icon: AlignCenterIcon, action: () => editorActions.setTextAlign('center'), align: 'center' },
+  { icon: AlignRightIcon, action: () => editorActions.setTextAlign('right'), align: 'right' },
+  { icon: AlignJustifyIcon, action: () => editorActions.setTextAlign('justify'), align: 'justify' },
+] as const
+
+// Check if button is active
+function isActive(button: typeof formatButtons[number] | typeof styleButtons[number]) {
+  return button.active ? props.editor.isActive(button.active) : false
+}
+
+function isAlignActive(align: string) {
+  return props.editor.isActive({ textAlign: align })
+}
 
 function updatePosition() {
   const { state, view } = props.editor
   const { selection } = state
   const { from, to } = selection
 
-  if (from === to) {
+  // Check if this is a node selection (indicating drag handle usage) or if dragging
+  const isNodeSelection = (selection as any).node !== undefined
+
+  // Hide toolbar during drag operations or node selections
+  if (from === to || isNodeSelection || isDragging.value) {
     show.value = false
     return
   }
 
-  // Get the coordinates of the selection
   const start = view.coordsAtPos(from)
   const end = view.coordsAtPos(to)
-
-  // Calculate the center of the selection
   const centerX = (start.left + end.left) / 2
   const centerY = Math.min(start.top, end.top)
 
-  // Position toolbar above the selection using fixed positioning (relative to viewport)
   position.value = {
     top: centerY - 46,
     left: centerX,
@@ -60,53 +116,72 @@ function updatePosition() {
   show.value = true
 }
 
-function handleSelectionUpdate() {
-  updatePosition()
-}
+let rafId: number | null = null
+function scheduleUpdate() {
+  if (rafId !== null)
+    return
 
-function handleUpdate() {
-  updatePosition()
+  rafId = requestAnimationFrame(() => {
+    updatePosition()
+    rafId = null
+  })
 }
 
 onMounted(() => {
   if (props.editor) {
-    props.editor.on('selectionUpdate', handleSelectionUpdate)
-    props.editor.on('update', handleUpdate)
-    // Initial check for existing selection
+    props.editor.on('selectionUpdate', scheduleUpdate)
+    props.editor.on('update', scheduleUpdate)
     updatePosition()
   }
+
+  // Add global drag event listeners
+  document.addEventListener('dragstart', () => {
+    isDragging.value = true
+  })
+  document.addEventListener('dragend', () => {
+    isDragging.value = false
+  })
 })
 
 onBeforeUnmount(() => {
-  if (props.editor) {
-    props.editor.off('selectionUpdate', handleSelectionUpdate)
-    props.editor.off('update', handleUpdate)
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId)
   }
+
+  if (props.editor) {
+    props.editor.off('selectionUpdate', scheduleUpdate)
+    props.editor.off('update', scheduleUpdate)
+  }
+
+  // Remove drag event listeners
+  document.removeEventListener('dragstart', () => {
+    isDragging.value = true
+  })
+  document.removeEventListener('dragend', () => {
+    isDragging.value = false
+  })
 })
 
-const isBold = computed(() => props.editor.isActive('bold'))
-const isItalic = computed(() => props.editor.isActive('italic'))
-const isUnderline = computed(() => props.editor.isActive('underline'))
-const isStrikethrough = computed(() => props.editor.isActive('strike'))
-const isCode = computed(() => props.editor.isActive('code'))
-const isHighlight = computed(() => props.editor.isActive('highlight'))
-const isSuperscript = computed(() => props.editor.isActive('superscript'))
-const isSubscript = computed(() => props.editor.isActive('subscript'))
-const isAlignLeft = computed(() => props.editor.isActive({ textAlign: 'left' }))
-const isAlignCenter = computed(() => props.editor.isActive({ textAlign: 'center' }))
-const isAlignRight = computed(() => props.editor.isActive({ textAlign: 'right' }))
-const isAlignJustify = computed(() => props.editor.isActive({ textAlign: 'justify' }))
+watch(() => props.editor, (newEditor, oldEditor) => {
+  if (oldEditor) {
+    oldEditor.off('selectionUpdate', scheduleUpdate)
+    oldEditor.off('update', scheduleUpdate)
+  }
 
-function handleLinkClick() {
-  linkDialogOpen.value = true
-}
+  if (newEditor) {
+    newEditor.on('selectionUpdate', scheduleUpdate)
+    newEditor.on('update', scheduleUpdate)
+    updatePosition()
+  }
+})
 </script>
 
 <template>
   <Teleport to="body">
     <div
       v-if="show"
-      class="fixed z-50 flex items-center gap-1 rounded-lg border bg-background px-2 py-1 shadow-lg"
+      ref="toolbarRef"
+      class="fixed z-50 flex items-center gap-1 rounded-lg border bg-background px-1 py-1 shadow-lg"
       :style="{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -115,138 +190,48 @@ function handleLinkClick() {
     >
       <!-- Text Formatting -->
       <Button
+        v-for="(btn, idx) in formatButtons"
+        :key="idx"
         variant="ghost"
         size="icon"
         class="h-8 w-8"
-        :class="{ 'bg-accent': isBold }"
-        @click="editorActions.toggleBold"
+        :class="{ 'bg-accent': isActive(btn) }"
+        @click="btn.action"
       >
-        <BoldIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isItalic }"
-        @click="editorActions.toggleItalic"
-      >
-        <ItalicIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isUnderline }"
-        @click="editorActions.toggleUnderline"
-      >
-        <UnderlineIcon class="h-4 w-4" />
+        <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator
-        orientation="vertical"
-      />
+      <Separator orientation="vertical" class="h-6" />
 
+      <!-- Style Buttons -->
       <Button
+        v-for="(btn, idx) in styleButtons"
+        :key="idx"
         variant="ghost"
         size="icon"
         class="h-8 w-8"
-        :class="{ 'bg-accent': isStrikethrough }"
-        @click="editorActions.toggleStrike"
+        :class="{ 'bg-accent': isActive(btn) }"
+        @click="btn.action"
       >
-        <StrikethroughIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isCode }"
-        @click="editorActions.toggleCode"
-      >
-        <CodeIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isHighlight }"
-        @click="editorActions.toggleHighlight"
-      >
-        <HighlighterIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isSuperscript }"
-        @click="editorActions.toggleSuperscript"
-      >
-        <SuperscriptIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isSubscript }"
-        @click="editorActions.toggleSubscript"
-      >
-        <SubscriptIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        @click="handleLinkClick"
-      >
-        <Link2Icon class="h-4 w-4" />
+        <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator
-        orientation="vertical"
-        class="h-6"
-      />
+      <Separator orientation="vertical" class="h-6" />
 
       <!-- Text Alignment -->
       <Button
+        v-for="(btn, idx) in alignButtons"
+        :key="idx"
         variant="ghost"
         size="icon"
         class="h-8 w-8"
-        :class="{ 'bg-accent': isAlignLeft }"
-        @click="editorActions.setTextAlign('left')"
+        :class="{ 'bg-accent': isAlignActive(btn.align) }"
+        @click="btn.action"
       >
-        <AlignLeftIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isAlignCenter }"
-        @click="editorActions.setTextAlign('center')"
-      >
-        <AlignCenterIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isAlignRight }"
-        @click="editorActions.setTextAlign('right')"
-      >
-        <AlignRightIcon class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isAlignJustify }"
-        @click="editorActions.setTextAlign('justify')"
-      >
-        <AlignJustifyIcon class="h-4 w-4" />
+        <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator
-        orientation="vertical"
-        class="h-6"
-      />
+      <Separator orientation="vertical" class="h-6" />
 
       <!-- Colors -->
       <TextColorPicker :editor="editor" />
