@@ -43,7 +43,7 @@
 
   /* highlight styles */
   mark {
-    background-color: #faf594;
+    background-color: #fffaa0;
     border-radius: 0.2rem;
     box-decoration-break: clone;
     padding: 0.1rem 0.3rem;
@@ -59,8 +59,10 @@
   /* Blockquote styles */
   blockquote {
     border-left: 3px solid var(--border);
+    background-color: color-mix(in srgb, var(--accent) 50%, transparent);
     margin: 1.5rem 0;
     padding-left: 1rem;
+    padding-block: 0.5rem;
   }
 
   /* List styles */
@@ -103,49 +105,279 @@
       padding: 0;
     }
 
-    /* Code styling */
+    /* GitHub-style Code Theme */
+
+    /* Base code block */
+    .hljs {
+      background: #ffffff;
+      color: #24292f;
+      padding: 16px;
+      border-radius: 6px;
+      line-height: 1.5;
+      overflow-x: auto;
+      border: 1px solid #d0d7de;
+    }
+
+    /* Comments */
     .hljs-comment,
     .hljs-quote {
-      color: #616161;
+      color: #6e7781;
+      font-style: italic;
     }
 
+    .hljs-doctag,
+    .hljs-formula {
+      color: #6e7781;
+    }
+
+    /* Keywords and control flow */
+    .hljs-keyword {
+      color: #cf222e;
+    }
+
+    .hljs-keyword.hljs-function,
+    .hljs-keyword.hljs-class {
+      color: #cf222e;
+    }
+
+    .hljs-keyword.hljs-return,
+    .hljs-keyword.hljs-import,
+    .hljs-keyword.hljs-export,
+    .hljs-keyword.hljs-from {
+      color: #cf222e;
+    }
+
+    /* Strings */
+    .hljs-string {
+      color: #0a3069;
+    }
+
+    .hljs-symbol,
+    .hljs-bullet,
+    .hljs-regexp,
+    .hljs-link {
+      color: #0a3069;
+    }
+
+    /* Numbers and literals */
+    .hljs-number,
+    .hljs-literal {
+      color: #0550ae;
+    }
+
+    /* Functions and methods */
+    .hljs-title,
+    .hljs-section,
+    .hljs-title.function_,
+    .hljs-title.class_,
+    .hljs-function {
+      color: #8250df;
+    }
+
+    /* Variables and parameters */
     .hljs-variable,
     .hljs-template-variable,
-    .hljs-attribute,
-    .hljs-tag,
-    .hljs-name,
-    .hljs-regexp,
-    .hljs-link,
-    .hljs-name,
-    .hljs-selector-id,
-    .hljs-selector-class {
-      color: #f98181;
-    }
-
-    .hljs-number,
-    .hljs-meta,
-    .hljs-built_in,
-    .hljs-builtin-name,
-    .hljs-literal,
-    .hljs-type,
     .hljs-params {
-      color: #fbbc88;
+      color: #953800;
     }
 
-    .hljs-string,
-    .hljs-symbol,
-    .hljs-bullet {
-      color: #b9f18d;
+    .hljs-variable.language_ {
+      color: #0550ae;
     }
 
-    .hljs-title,
-    .hljs-section {
-      color: #faf594;
+    /* Types and classes */
+    .hljs-type,
+    .hljs-class,
+    .hljs-built_in,
+    .hljs-builtin-name {
+      color: #953800;
     }
 
-    .hljs-keyword,
+    /* HTML/XML tags */
+    .hljs-tag {
+      color: #116329;
+    }
+
+    .hljs-name,
     .hljs-selector-tag {
-      color: #70cff8;
+      color: #116329;
+    }
+
+    /* Attributes */
+    .hljs-attribute,
+    .hljs-attr {
+      color: #0550ae;
+    }
+
+    .hljs-property {
+      color: #0550ae;
+    }
+
+    /* Selectors (CSS) */
+    .hljs-selector-id {
+      color: #0550ae;
+    }
+
+    .hljs-selector-class {
+      color: #6f42c1;
+    }
+
+    .hljs-selector-pseudo {
+      color: #0550ae;
+    }
+
+    .hljs-selector-attr {
+      color: #0550ae;
+    }
+
+    /* Meta and decorators */
+    .hljs-meta {
+      color: #0550ae;
+    }
+
+    .hljs-meta .hljs-keyword {
+      color: #0550ae;
+    }
+
+    .hljs-meta .hljs-string {
+      color: #0a3069;
+    }
+
+    /* Operators */
+    .hljs-operator {
+      color: #cf222e;
+    }
+
+    .hljs-punctuation {
+      color: #24292f;
+    }
+
+    /* Template interpolation */
+    .hljs-template-tag {
+      color: #cf222e;
+    }
+
+    .hljs-subst {
+      color: #24292f;
+    }
+
+    /* Diff highlighting */
+    .hljs-addition {
+      color: #116329;
+      background-color: #dafbe1;
+    }
+
+    .hljs-deletion {
+      color: #82071e;
+      background-color: #ffebe9;
+    }
+
+    /* Emphasis */
+    .hljs-emphasis {
+      font-style: italic;
+    }
+
+    .hljs-strong {
+      font-weight: 600;
+    }
+
+    /* Selection */
+    .hljs::selection,
+    .hljs *::selection {
+      background-color: #b6e3ff;
+    }
+
+    /* Dark theme variant */
+    @media (prefers-color-scheme: dark) {
+      .hljs {
+        background: #0d1117;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+      }
+
+      .hljs-comment,
+      .hljs-quote,
+      .hljs-doctag,
+      .hljs-formula {
+        color: #8b949e;
+      }
+
+      .hljs-keyword {
+        color: #ff7b72;
+      }
+
+      .hljs-string,
+      .hljs-symbol,
+      .hljs-bullet,
+      .hljs-regexp,
+      .hljs-link {
+        color: #a5d6ff;
+      }
+
+      .hljs-number,
+      .hljs-literal,
+      .hljs-variable.language_ {
+        color: #79c0ff;
+      }
+
+      .hljs-title,
+      .hljs-section,
+      .hljs-title.function_,
+      .hljs-title.class_,
+      .hljs-function {
+        color: #d2a8ff;
+      }
+
+      .hljs-variable,
+      .hljs-template-variable,
+      .hljs-params,
+      .hljs-type,
+      .hljs-class,
+      .hljs-built_in,
+      .hljs-builtin-name {
+        color: #ffa657;
+      }
+
+      .hljs-tag,
+      .hljs-name,
+      .hljs-selector-tag {
+        color: #7ee787;
+      }
+
+      .hljs-attribute,
+      .hljs-attr,
+      .hljs-property,
+      .hljs-selector-id,
+      .hljs-selector-class,
+      .hljs-selector-pseudo,
+      .hljs-selector-attr,
+      .hljs-meta {
+        color: #79c0ff;
+      }
+
+      .hljs-operator,
+      .hljs-template-tag {
+        color: #ff7b72;
+      }
+
+      .hljs-punctuation {
+        color: #e6edf3;
+      }
+
+      .hljs-addition {
+        color: #7ee787;
+        background-color: rgba(46, 160, 67, 0.15);
+      }
+
+      .hljs-deletion {
+        color: #ffa198;
+        background-color: rgba(248, 81, 73, 0.15);
+      }
+
+      .hljs::selection,
+      .hljs *::selection {
+        background-color: rgba(56, 139, 253, 0.4);
+      }
     }
 
     .hljs-emphasis {
@@ -535,10 +767,10 @@ div[contenteditable='true'] {
   justify-content: center;
   width: 1rem;
   height: 1.25rem;
-  margin-top: 0.2rem;
+  margin-top: 0.1rem;
   margin-right: 0.1rem;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1rem;
   cursor: grab;
   background: transparent;
   color: var(--secondary-foreground);

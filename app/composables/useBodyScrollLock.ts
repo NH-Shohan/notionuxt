@@ -42,18 +42,25 @@ export function unlockBodyScroll() {
  * Automatically unlocks on unmount
  */
 export function useBodyScrollLock(condition: Ref<boolean>) {
+  let hasLocked = false
+
   watch(condition, (isOpen) => {
-    if (isOpen) {
-      lockBodyScroll()
-    }
-    else {
-      unlockBodyScroll()
-    }
+    nextTick(() => {
+      if (isOpen && !hasLocked) {
+        lockBodyScroll()
+        hasLocked = true
+      }
+      else if (!isOpen && hasLocked) {
+        unlockBodyScroll()
+        hasLocked = false
+      }
+    })
   }, { immediate: true })
 
   onBeforeUnmount(() => {
-    if (condition.value) {
+    if (hasLocked) {
       unlockBodyScroll()
+      hasLocked = false
     }
   })
 }

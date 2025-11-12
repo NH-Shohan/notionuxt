@@ -35,8 +35,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useEditorActions } from '@/composables/useEditorActions'
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
+import { useEditorActions } from '@/composables/useEditorActions'
 
 const props = defineProps<{
   editor: EditorType

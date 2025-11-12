@@ -10,6 +10,8 @@ import { all, createLowlight } from 'lowlight'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { createEditorExtensions } from './useEditorExtensions'
 
+const STORAGE_KEY = 'editor-content'
+
 export function useEditor() {
   const editor = ref<EditorType | null>(null)
   const isEditable = ref(true)
@@ -21,11 +23,21 @@ export function useEditor() {
   lowlight.register('ts', ts)
 
   onMounted(() => {
+    // Load content from localStorage
+    const savedContent = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+
     editor.value = new Editor({
-      content: '',
+      content: savedContent || '',
       extensions: createEditorExtensions(editor as Ref<EditorType | null>, lowlight),
       onCreate: ({ editor: currentEditor }) => {
         migrateMathStrings(currentEditor)
+      },
+      onUpdate: ({ editor: currentEditor }) => {
+        // Save content to localStorage whenever user types
+        if (typeof window !== 'undefined') {
+          const html = currentEditor.getHTML()
+          localStorage.setItem(STORAGE_KEY, html)
+        }
       },
       autofocus: true,
       editable: true,

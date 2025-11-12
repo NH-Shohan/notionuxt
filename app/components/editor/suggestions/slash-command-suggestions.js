@@ -266,11 +266,11 @@ export default {
       onKeyDown(props) {
         if (props.event.key === 'Escape') {
           if (component && document.body.contains(component.element)) {
-            document.body.removeChild(component.element)
+          document.body.removeChild(component.element)
           }
           if (component) {
-            component.destroy()
-            component = null
+          component.destroy()
+          component = null
           }
           unlockBodyScroll()
           return true
