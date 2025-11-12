@@ -20,7 +20,7 @@ import {
   TypeIcon,
   YoutubeIcon,
 } from 'lucide-vue-next'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import CommonDialog from '@/components/editor/dialogs/CommonDialog.vue'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Kbd, KbdGroup } from '@/components/ui/kbd'
@@ -86,8 +86,33 @@ watch(dialogOpen, (isOpen) => {
   }
 })
 
+// Clear highlighted state function
+function clearHighlightedState() {
+  if (!commandRef.value)
+    return
+
+  const commandElement = (commandRef.value as any).$el as HTMLElement
+  if (commandElement) {
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      const highlightedItems = commandElement.querySelectorAll('[data-highlighted]')
+      highlightedItems.forEach((item: Element) => {
+        item.removeAttribute('data-highlighted')
+      })
+      // Also clear aria-selected attributes that reka-ui might set
+      const ariaSelectedItems = commandElement.querySelectorAll('[aria-selected="true"]')
+      ariaSelectedItems.forEach((item: Element) => {
+        item.setAttribute('aria-selected', 'false')
+      })
+    })
+  }
+}
+
 // Prevent focus on mount and whenever items change
 onMounted(() => {
+  // Ensure selectedIndex stays null
+  selectedIndex.value = null
+
   nextTick(() => {
     // Blur any focused element within the command component
     if (commandRef.value) {
@@ -95,10 +120,33 @@ onMounted(() => {
       if (focusedElement) {
         (focusedElement as HTMLElement).blur()
       }
+      // Clear any highlighted/selected state from reka-ui
+      clearHighlightedState()
       // Ensure editor stays focused
       props.editor?.commands?.focus()
     }
   })
+
+  // Watch for reka-ui setting highlighted state and clear it
+  if (commandRef.value) {
+    const commandElement = (commandRef.value as any).$el as HTMLElement
+    if (commandElement) {
+      const observer = new MutationObserver(() => {
+        if (selectedIndex.value === null) {
+          clearHighlightedState()
+        }
+      })
+      observer.observe(commandElement, {
+        attributes: true,
+        attributeFilter: ['data-highlighted', 'aria-selected'],
+        subtree: true,
+      })
+      // Clean up observer when component unmounts
+      onUnmounted(() => {
+        observer.disconnect()
+      })
+    }
+  }
 })
 
 // Prevent focus when items change
@@ -112,6 +160,18 @@ watch(
         const focusedElement = commandRef.value.querySelector(':focus')
         if (focusedElement) {
           (focusedElement as HTMLElement).blur()
+        }
+        // Clear any highlighted/selected state from reka-ui
+        const commandElement = (commandRef.value as any).$el as HTMLElement
+        if (commandElement) {
+          const highlightedItems = commandElement.querySelectorAll('[data-highlighted]')
+          highlightedItems.forEach((item: Element) => {
+            item.removeAttribute('data-highlighted')
+          })
+          const selectedItems = commandElement.querySelectorAll('[data-selected="true"]')
+          selectedItems.forEach((item: Element) => {
+            item.removeAttribute('data-selected')
+          })
         }
         props.editor?.commands?.focus()
       }
@@ -534,6 +594,7 @@ defineExpose({
 <template>
   <Command
     ref="commandRef"
+    :default-value="null"
     class="w-[320px] max-h-[440px] h-auto bg-background rounded-lg border absolute z-50"
     :class="{ 'keyboard-navigation': isKeyboardNavigation }"
     @focus="handleFocus"
@@ -562,7 +623,7 @@ defineExpose({
         >
           <component
             :is="iconMap[item.icon]"
-            :stroke-width="1.75"
+            :stroke-width="2"
             class="mr-1 size-4"
           />
           <span>{{ item.title }}</span>

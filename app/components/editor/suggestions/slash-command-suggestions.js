@@ -7,7 +7,7 @@ function getSuggestionItems() {
     // Basic blocks
     {
       id: 'text',
-      title: 'Text',
+      title: 'Paragraph',
       description: 'Start writing with plain text',
       icon: 'TypeIcon',
       command: ({ editor, range }) => {
@@ -125,7 +125,7 @@ function getSuggestionItems() {
     },
     {
       id: 'video',
-      title: 'Video',
+      title: 'Youtube',
       description: 'Embed a YouTube video',
       icon: 'Youtube',
       command: ({ editor: _editor, range: _range }) => {

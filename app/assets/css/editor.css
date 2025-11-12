@@ -97,6 +97,7 @@
 
     code {
       background: none;
+      border: none;
       color: inherit;
       font-size: 0.8rem;
       padding: 0;
@@ -327,7 +328,7 @@
     margin: 1rem 0;
 
     &.ProseMirror-selectednode {
-      border-top: 1px solid var(--primary);
+      border-top: 1px solid var(--color-black);
     }
   }
 

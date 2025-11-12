@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils'
 import { provideCommandContext } from '.'
 
 const props = withDefaults(defineProps<ListboxRootProps & { class?: HTMLAttributes['class'] }>(), {
-  modelValue: '',
+  modelValue: null,
+  defaultValue: null,
 })
 
 const emits = defineEmits<ListboxRootEmits>()

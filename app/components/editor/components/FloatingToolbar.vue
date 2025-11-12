@@ -304,7 +304,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         :key="idx"
         variant="ghost"
         size="icon"
-        class="h-8 w-8"
+        class="h-8 w-8 rounded-[8px]"
         :class="{ 'bg-accent': isActive(btn) }"
         @click="btn.action"
       >
@@ -319,7 +319,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         :key="idx"
         variant="ghost"
         size="icon"
-        class="h-8 w-8"
+        class="h-8 w-8 rounded-[8px]"
         :class="{ 'bg-accent': isAlignActive(btn.align) }"
         @click="btn.action"
       >
@@ -334,7 +334,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         :key="idx"
         variant="ghost"
         size="icon"
-        class="h-8 w-8"
+        class="h-8 w-8 rounded-[8px]"
         :class="{ 'bg-accent': isActive(btn) }"
         @click="btn.action"
       >
@@ -349,7 +349,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost" size="icon" class="h-8 w-8">
+          <Button variant="ghost" size="icon" class="h-8 w-8 rounded-[8px]">
             <EllipsisVerticalIcon class="h-4 w-4" stroke-width="2" />
           </Button>
         </DropdownMenuTrigger>
