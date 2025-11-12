@@ -1,6 +1,7 @@
 import { VueRenderer } from '@tiptap/vue-3'
 
 import SlashCommandList from '@/components/editor/components/SlashCommandList.vue'
+import { lockBodyScroll, unlockBodyScroll } from '@/composables/useBodyScrollLock'
 
 function getSuggestionItems() {
   return [
@@ -250,6 +251,7 @@ export default {
         })
 
         document.body.appendChild(component.element)
+        lockBodyScroll()
         repositionComponent(props.clientRect())
       },
 
@@ -263,9 +265,14 @@ export default {
 
       onKeyDown(props) {
         if (props.event.key === 'Escape') {
-          document.body.removeChild(component.element)
-          component.destroy()
-          component = null
+          if (component && document.body.contains(component.element)) {
+            document.body.removeChild(component.element)
+          }
+          if (component) {
+            component.destroy()
+            component = null
+          }
+          unlockBodyScroll()
           return true
         }
 
@@ -280,6 +287,7 @@ export default {
           component.destroy()
           component = null
         }
+        unlockBodyScroll()
       },
     }
   },

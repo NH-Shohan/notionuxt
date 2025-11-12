@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useEditorActions } from '@/composables/useEditorActions'
+import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
 
 const props = defineProps<{
   editor: EditorType
@@ -44,6 +45,9 @@ const props = defineProps<{
 const editorActions = useEditorActions(computed(() => props.editor))
 
 const show = ref(false)
+
+// Lock body scroll when toolbar is visible
+useBodyScrollLock(show)
 const position = ref({ top: 0, left: 0, transform: 'translateX(-50%)' })
 const toolbarRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
