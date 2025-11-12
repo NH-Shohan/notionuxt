@@ -7,20 +7,34 @@ import {
   AlignLeftIcon,
   AlignRightIcon,
   BoldIcon,
+  CheckSquareIcon,
   CodeIcon,
+  EllipsisVerticalIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
   HighlighterIcon,
   ItalicIcon,
   Link2Icon,
+  ListIcon,
+  ListOrderedIcon,
+  QuoteIcon,
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
+  TypeIcon,
   UnderlineIcon,
 } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ColorPicker from '@/components/editor/components/ColorPicker.vue'
 import CommonDialog from '@/components/editor/dialogs/CommonDialog.vue'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useEditorActions } from '@/composables/useEditorActions'
 
 const props = defineProps<{
@@ -66,15 +80,15 @@ const formatButtons = [
   { icon: BoldIcon, action: () => editorActions.toggleBold(), active: 'bold' },
   { icon: ItalicIcon, action: () => editorActions.toggleItalic(), active: 'italic' },
   { icon: UnderlineIcon, action: () => editorActions.toggleUnderline(), active: 'underline' },
+  { icon: StrikethroughIcon, action: () => editorActions.toggleStrike(), active: 'strike' },
 ] as const
 
 const styleButtons = [
-  { icon: StrikethroughIcon, action: () => editorActions.toggleStrike(), active: 'strike' },
   { icon: CodeIcon, action: () => editorActions.toggleCode(), active: 'code' },
-  { icon: HighlighterIcon, action: () => editorActions.toggleHighlight(), active: 'highlight' },
   { icon: SuperscriptIcon, action: () => editorActions.toggleSuperscript(), active: 'superscript' },
   { icon: SubscriptIcon, action: () => editorActions.toggleSubscript(), active: 'subscript' },
   { icon: Link2Icon, action: () => editorActions.toggleLink(), active: null },
+  { icon: HighlighterIcon, action: () => editorActions.toggleHighlight(), active: 'highlight' },
 ] as const
 
 const alignButtons = [
@@ -91,6 +105,27 @@ function isActive(button: typeof formatButtons[number] | typeof styleButtons[num
 
 function isAlignActive(align: string) {
   return props.editor.isActive({ textAlign: align })
+}
+
+function isBlockActive(button: typeof editorActions.blockButtons[number]) {
+  if (button.active === 'heading') {
+    return props.editor.isActive('heading', { level: button.level })
+  }
+  return button.active ? props.editor.isActive(button.active) : false
+}
+
+function getBlockIcon(iconName: string) {
+  const iconMap = {
+    TypeIcon,
+    Heading1Icon,
+    Heading2Icon,
+    Heading3Icon,
+    ListIcon,
+    ListOrderedIcon,
+    CheckSquareIcon,
+    QuoteIcon,
+  }
+  return iconMap[iconName as keyof typeof iconMap] || EllipsisVerticalIcon
 }
 
 function updatePosition() {
@@ -273,25 +308,10 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         :class="{ 'bg-accent': isActive(btn) }"
         @click="btn.action"
       >
-        <component :is="btn.icon" class="h-4 w-4" />
+        <component :is="btn.icon" class="h-4 w-4" stroke-width="2" />
       </Button>
 
-      <Separator orientation="vertical" />
-
-      <!-- Style Buttons -->
-      <Button
-        v-for="(btn, idx) in styleButtons"
-        :key="idx"
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :class="{ 'bg-accent': isActive(btn) }"
-        @click="btn.action"
-      >
-        <component :is="btn.icon" class="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" />
+      <div class="w-px h-6 bg-border mx-1" />
 
       <!-- Text Alignment -->
       <Button
@@ -303,13 +323,48 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         :class="{ 'bg-accent': isAlignActive(btn.align) }"
         @click="btn.action"
       >
-        <component :is="btn.icon" class="h-4 w-4" />
+        <component :is="btn.icon" class="h-4 w-4" stroke-width="2" />
       </Button>
 
-      <Separator orientation="vertical" />
+      <div class="w-px h-6 bg-border mx-1" />
+
+      <!-- Style Buttons -->
+      <Button
+        v-for="(btn, idx) in styleButtons"
+        :key="idx"
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :class="{ 'bg-accent': isActive(btn) }"
+        @click="btn.action"
+      >
+        <component :is="btn.icon" class="h-4 w-4" stroke-width="2" />
+      </Button>
 
       <!-- Colors -->
       <ColorPicker :editor="editor" />
+
+      <!-- <Separator orientation="vertical" /> -->
+      <div class="w-px h-6 bg-border ml-1" />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="ghost" size="icon" class="h-8 w-8">
+            <EllipsisVerticalIcon class="h-4 w-4" stroke-width="2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" class="w-48">
+          <DropdownMenuItem
+            v-for="(btn, idx) in editorActions.blockButtons"
+            :key="idx"
+            :class="{ 'bg-accent': isBlockActive(btn) }"
+            @click="btn.action"
+          >
+            <component :is="getBlockIcon(btn.icon)" class="h-4 w-4 mr-2" stroke-width="2" />
+            {{ btn.label }}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <!-- Dialogs -->
       <CommonDialog

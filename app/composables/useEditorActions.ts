@@ -233,6 +233,17 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     }
   }
 
+  const blockButtons = [
+    { label: 'Paragraph', icon: 'TypeIcon', action: () => setParagraph(), active: 'paragraph' },
+    { label: 'Heading 1', icon: 'Heading1Icon', action: () => toggleHeading(1), active: 'heading', level: 1 },
+    { label: 'Heading 2', icon: 'Heading2Icon', action: () => toggleHeading(2), active: 'heading', level: 2 },
+    { label: 'Heading 3', icon: 'Heading3Icon', action: () => toggleHeading(3), active: 'heading', level: 3 },
+    { label: 'Bullet List', icon: 'ListIcon', action: () => toggleBulletList(), active: 'bulletList' },
+    { label: 'Numbered List', icon: 'ListOrderedIcon', action: () => toggleOrderedList(), active: 'orderedList' },
+    { label: 'Todo List', icon: 'CheckSquareIcon', action: () => toggleTaskList(), active: 'taskList' },
+    { label: 'Quote', icon: 'QuoteIcon', action: () => toggleBlockquote(), active: 'blockquote' },
+  ] as const
+
   return {
     toggleBold,
     toggleItalic,
@@ -261,6 +272,7 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     toggleTextColor,
     setTextColor,
     setBackgroundColor,
+    blockButtons,
     // Dialog-related properties
     dialogOpen,
     dialogConfig,

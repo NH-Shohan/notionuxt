@@ -10,7 +10,7 @@ const { editor } = useEditor()
 </script>
 
 <template>
-  <div class="border rounded-lg p-4 mt-5 pl-6 relative">
+  <div class="border rounded-lg p-4 mt-5 pl-6 relative bg-background/30">
     <DragHandle
       v-if="editor"
       :editor="editor as EditorType"
