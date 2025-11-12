@@ -1,3 +1,4 @@
+import type { Component } from 'vue'
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
@@ -29,12 +30,11 @@ import {
   TextInitialIcon,
   UnderlineIcon,
   YoutubeIcon,
-} from 'lucide-vue-next';
-import type { Component } from 'vue';
+} from 'lucide-vue-next'
 
 export interface ToolbarAction {
-  icon: Component;
-  action: () => void;
+  icon: Component
+  action: () => void
 }
 
 export function useEditorToolbar(actions: ReturnType<typeof import('./useEditorActions').useEditorActions>) {
@@ -159,9 +159,9 @@ export function useEditorToolbar(actions: ReturnType<typeof import('./useEditorA
       icon: BrushIcon,
       action: actions.toggleTextColor,
     },
-  ];
+  ]
 
   return {
     toolbarActions,
-  };
+  }
 }

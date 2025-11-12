@@ -46,7 +46,7 @@ export function useColorPicker(type: 'text' | 'background') {
     if (typeof window === 'undefined')
       return
 
-    const updated = [color, ...recentlyUsed.value.filter(c => c !== color)].slice(0, 5)
+    const updated = [color, ...recentlyUsed.value.filter(c => c !== color)].slice(0, 6)
     recentlyUsed.value = updated
     localStorage.setItem(storageKey, JSON.stringify(updated))
   }

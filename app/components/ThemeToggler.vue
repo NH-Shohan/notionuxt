@@ -1,66 +1,67 @@
 <script setup lang="ts">
-import { Moon, Sun } from 'lucide-vue-next';
-import { onMounted, onUnmounted, ref } from 'vue';
-import { cn } from '@/lib/utils';
+import { Moon, Sun } from 'lucide-vue-next'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { cn } from '@/lib/utils'
 
 interface Props {
-  duration?: number;
-  class?: string;
+  duration?: number
+  class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   duration: 750,
-});
+})
 
-const isDark = ref(false);
-const buttonRef = ref<HTMLButtonElement | null>(null);
-let observer: MutationObserver | null = null;
+const isDark = ref(false)
+const buttonRef = ref<HTMLButtonElement | null>(null)
+let observer: MutationObserver | null = null
 
 function updateTheme() {
-  isDark.value = document.documentElement.classList.contains('dark');
+  isDark.value = document.documentElement.classList.contains('dark')
 }
 
 onMounted(() => {
   // Initialize theme from localStorage
   if (typeof window !== 'undefined') {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme')
     if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('dark')
+    }
+    else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark')
     }
   }
 
-  updateTheme();
+  updateTheme()
 
-  observer = new MutationObserver(updateTheme);
+  observer = new MutationObserver(updateTheme)
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['class'],
-  });
-});
+  })
+})
 
 onUnmounted(() => {
   if (observer) {
-    observer.disconnect();
+    observer.disconnect()
   }
-});
+})
 
 async function toggleTheme() {
   if (!buttonRef.value)
-    return;
+    return
 
   await document.startViewTransition(() => {
-    const newTheme = !isDark.value;
-    isDark.value = newTheme;
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-  }).ready;
+    const newTheme = !isDark.value
+    isDark.value = newTheme
+    document.documentElement.classList.toggle('dark')
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light')
+  }).ready
 
-  const { top, left, width, height } = buttonRef.value.getBoundingClientRect();
-  const x = left + width / 2;
-  const y = top + height / 2;
-  const maxRadius = Math.hypot(Math.max(left, window.innerWidth - left), Math.max(top, window.innerHeight - top));
+  const { top, left, width, height } = buttonRef.value.getBoundingClientRect()
+  const x = left + width / 2
+  const y = top + height / 2
+  const maxRadius = Math.hypot(Math.max(left, window.innerWidth - left), Math.max(top, window.innerHeight - top))
 
   document.documentElement.animate(
     {
@@ -70,8 +71,8 @@ async function toggleTheme() {
       duration: props.duration,
       easing: 'ease-in-out',
       pseudoElement: '::view-transition-new(root)',
-    }
-  );
+    },
+  )
 }
 </script>
 

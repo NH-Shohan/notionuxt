@@ -103,19 +103,15 @@ export function createEditorExtensions(
     }),
     Mathematics.configure({
       blockOptions: {
-        onClick: (node, pos) => {
-          const newCalculation = prompt('Enter new calculation:', node.attrs.latex)
-          if (newCalculation) {
-            editor.value?.chain().setNodeSelection(pos).updateBlockMath({ latex: newCalculation }).focus().run()
-          }
+        onClick: (_node, _pos) => {
+          // Dialog handling will be done at component level
+          // For now, do nothing on click
         },
       },
       inlineOptions: {
-        onClick: (node, pos) => {
-          const newCalculation = prompt('Enter new calculation:', node.attrs.latex)
-          if (newCalculation) {
-            editor.value?.chain().setNodeSelection(pos).updateInlineMath({ latex: newCalculation }).focus().run()
-          }
+        onClick: (_node, _pos) => {
+          // Dialog handling will be done at component level
+          // For now, do nothing on click
         },
       },
     }),

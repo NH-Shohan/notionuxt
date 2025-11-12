@@ -1,8 +1,82 @@
 import type { Level } from '@tiptap/extension-heading'
 import type { Editor as EditorType } from '@tiptap/vue-3'
 import type { Ref } from 'vue'
+import type { LinkDialogConfig } from '@/components/editor/dialogs/CommonDialog.vue'
+import { ref } from 'vue'
 
 export function useEditorActions(editor: Ref<EditorType | null>) {
+  // Dialog state
+  const dialogOpen = ref(false)
+  const dialogConfig = ref<LinkDialogConfig>({ type: 'link' })
+  const currentAction = ref<string>('')
+
+  // Dialog handlers
+  function handleDialogSave(value: string, file?: File) {
+    const action = currentAction.value
+    currentAction.value = ''
+
+    if (!value && !file)
+      return
+
+    try {
+      switch (action) {
+        case 'toggleLink':
+          if (value) {
+            editor.value?.chain().focus().extendMarkRange('link').setLink({ href: value, target: '_blank' }).run()
+          }
+          else {
+            editor.value?.chain().focus().unsetLink().run()
+          }
+          break
+        case 'addImage':
+          if (value) {
+            if (file) {
+              // Convert file to data URL for immediate display
+              const reader = new FileReader()
+              reader.onload = (e) => {
+                const dataUrl = e.target?.result as string
+                editor.value?.chain().focus().setImage({ src: dataUrl }).run()
+              }
+              reader.readAsDataURL(file)
+            }
+            else {
+              editor.value?.chain().focus().setImage({ src: value }).run()
+            }
+          }
+          break
+        case 'onInsertInlineMath':
+          if (value) {
+            editor.value?.chain().focus().insertInlineMath({ latex: value }).run()
+          }
+          break
+        case 'onInsertBlockMath':
+          if (value) {
+            editor.value?.chain().focus().insertBlockMath({ latex: value }).run()
+          }
+          break
+        case 'addVideo':
+          if (value) {
+            editor.value?.chain().focus().setYoutubeVideo({ src: value }).run()
+          }
+          break
+      }
+    }
+    catch (error) {
+      console.warn('Error executing action:', error)
+    }
+
+    dialogOpen.value = false
+  }
+
+  function openDialog(type: LinkDialogConfig['type'], title?: string, description?: string, placeholder?: string) {
+    dialogConfig.value = {
+      type,
+      title,
+      description,
+      placeholder,
+    }
+    dialogOpen.value = true
+  }
   function toggleBold() {
     editor.value?.chain().focus().toggleBold().run()
   }
@@ -20,12 +94,8 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function toggleLink() {
-    const previousUrl = editor.value?.getAttributes('link').href
-    const url = prompt('URL', previousUrl) ?? ''
-
-    if (url) {
-      editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run()
-    }
+    currentAction.value = 'toggleLink'
+    openDialog('link', 'Edit Link', 'Enter the URL for the link', 'https://example.com')
   }
 
   function toggleCode() {
@@ -94,11 +164,8 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function addImage() {
-    const url = prompt('URL') ?? ''
-
-    if (url) {
-      editor.value?.chain().focus().setImage({ src: url }).run()
-    }
+    currentAction.value = 'addImage'
+    openDialog('image', 'Insert Image', 'Upload an image or enter an image URL', 'https://example.com/image.jpg')
   }
 
   function onInsertInlineMath() {
@@ -107,10 +174,8 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
       return editor.value?.chain().focus().insertInlineMath({ latex: '' }).run()
     }
 
-    const latex = prompt('Enter inline math expression:', '') ?? ''
-    if (latex) {
-      return editor.value?.chain().focus().insertInlineMath({ latex }).run()
-    }
+    currentAction.value = 'onInsertInlineMath'
+    openDialog('inlineMath', 'Insert Inline Math', 'Enter LaTeX math expression', 'E = mc^2')
   }
 
   function onInsertBlockMath() {
@@ -119,10 +184,8 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
       return editor.value?.chain().focus().insertBlockMath({ latex: '' }).run()
     }
 
-    const latex = prompt('Enter block math expression:', '') ?? ''
-    if (latex) {
-      return editor.value?.chain().focus().insertBlockMath({ latex }).run()
-    }
+    currentAction.value = 'onInsertBlockMath'
+    openDialog('blockMath', 'Insert Block Math', 'Enter LaTeX math expression', '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}')
   }
 
   function toggleTaskList() {
@@ -130,17 +193,8 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function addVideo() {
-    const url = prompt('Enter YouTube URL:', '') ?? ''
-
-    if (url) {
-      editor.value
-        ?.chain()
-        .focus()
-        .setYoutubeVideo({
-          src: url,
-        })
-        .run()
-    }
+    currentAction.value = 'addVideo'
+    openDialog('youtube', 'Embed YouTube Video', 'Enter the YouTube video URL', 'https://www.youtube.com/watch?v=...')
   }
 
   function toggleBackgroundColor() {
@@ -207,5 +261,9 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     toggleTextColor,
     setTextColor,
     setBackgroundColor,
+    // Dialog-related properties
+    dialogOpen,
+    dialogConfig,
+    handleDialogSave,
   }
 }

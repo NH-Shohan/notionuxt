@@ -17,12 +17,11 @@ import {
   UnderlineIcon,
 } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import BackgroundColorPicker from '@/components/editor/components/BackgroundColorPicker.vue'
-import TextColorPicker from '@/components/editor/components/TextColorPicker.vue'
+import ColorPicker from '@/components/editor/components/ColorPicker.vue'
+import CommonDialog from '@/components/editor/dialogs/CommonDialog.vue'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useEditorActions } from '@/composables/useEditorActions'
-import CommonDialog from '~/components/editor/dialogs/CommonDialog.vue'
 
 const props = defineProps<{
   editor: EditorType
@@ -32,7 +31,6 @@ const editorActions = useEditorActions(computed(() => props.editor))
 
 const show = ref(false)
 const position = ref({ top: 0, left: 0, transform: 'translateX(-50%)' })
-const linkDialogOpen = ref(false)
 const toolbarRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 
@@ -44,16 +42,16 @@ function closeToolbar() {
 // Handle outside click
 onClickOutside(toolbarRef, (event) => {
   // Don't close if clicking inside the editor or if a dialog is open
-  if (show.value && !linkDialogOpen.value && !props.editor.view.dom.contains(event.target as Node)) {
+  if (show.value && !editorActions.dialogOpen.value && !props.editor.view.dom.contains(event.target as Node)) {
     closeToolbar()
   }
 })
 
 // Handle ESC key
 onKeyStroke('Escape', (e) => {
-  if (linkDialogOpen.value) {
+  if (editorActions.dialogOpen.value) {
     // If dialog is open, close dialog first
-    linkDialogOpen.value = false
+    editorActions.dialogOpen.value = false
     e.preventDefault()
   }
   else if (show.value) {
@@ -76,7 +74,7 @@ const styleButtons = [
   { icon: HighlighterIcon, action: () => editorActions.toggleHighlight(), active: 'highlight' },
   { icon: SuperscriptIcon, action: () => editorActions.toggleSuperscript(), active: 'superscript' },
   { icon: SubscriptIcon, action: () => editorActions.toggleSubscript(), active: 'subscript' },
-  { icon: Link2Icon, action: () => linkDialogOpen.value = true, active: null },
+  { icon: Link2Icon, action: () => editorActions.toggleLink(), active: null },
 ] as const
 
 const alignButtons = [
@@ -278,7 +276,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator orientation="vertical" class="h-6" />
+      <Separator orientation="vertical" />
 
       <!-- Style Buttons -->
       <Button
@@ -293,7 +291,7 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator orientation="vertical" class="h-6" />
+      <Separator orientation="vertical" />
 
       <!-- Text Alignment -->
       <Button
@@ -308,17 +306,18 @@ watch(() => props.editor, (newEditor, oldEditor) => {
         <component :is="btn.icon" class="h-4 w-4" />
       </Button>
 
-      <Separator orientation="vertical" class="h-6" />
+      <Separator orientation="vertical" />
 
       <!-- Colors -->
-      <TextColorPicker :editor="editor" />
-      <BackgroundColorPicker :editor="editor" />
+      <ColorPicker :editor="editor" />
 
       <!-- Dialogs -->
       <CommonDialog
-        v-model:open="linkDialogOpen"
+        v-model:open="editorActions.dialogOpen.value"
         :editor="editor"
         :editor-actions="editorActions"
+        :config="editorActions.dialogConfig.value"
+        :on-save="editorActions.handleDialogSave"
       />
     </div>
   </Teleport>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { NodeViewContent, nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3';
-import { Checkbox } from '@/components/ui/checkbox';
+import { NodeViewContent, nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
+import { Checkbox } from '@/components/ui/checkbox'
 
-const props = defineProps(nodeViewProps);
+const props = defineProps(nodeViewProps)
 
 function updateChecked(checked: boolean) {
   props.updateAttributes({
     checked,
-  });
+  })
 }
 </script>
 
@@ -26,4 +26,3 @@ function updateChecked(checked: boolean) {
     <NodeViewContent as="div" />
   </NodeViewWrapper>
 </template>
-
