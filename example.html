@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notion Vue Editor Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>@notion-vue/editor Example</h1>
+    <p>This is a basic example of how to use the Notion Vue Editor in a plain HTML file.</p>
+
+    <!-- Vue app will be mounted here -->
+    <div id="app"></div>
+  </div>
+
+  <!-- Vue and package dependencies -->
+  <script type="importmap">
+  {
+    "imports": {
+      "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+      "@notion-vue/editor": "./dist/index.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { createApp } from 'vue'
+    import { NotionEditor } from '@notion-vue/editor'
+
+    const App = {
+      components: {
+        NotionEditor
+      },
+      template: `
+        <div>
+          <h2>Basic Editor</h2>
+          <NotionEditor />
+
+          <h2>Editor with Options</h2>
+          <NotionEditor :options="editorOptions" />
+        </div>
+      `,
+      data() {
+        return {
+          editorOptions: {
+            content: '<h1>Welcome to Notion Vue Editor!</h1><p>This is a <strong>rich text editor</strong> built with Vue 3 and TipTap.</p>',
+            editable: true,
+            autofocus: false
+          }
+        }
+      }
+    }
+
+    createApp(App).mount('#app')
+  </script>
+</body>
+</html>

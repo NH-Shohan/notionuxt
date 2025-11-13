@@ -1,8 +1,8 @@
-# notionuxt
+# @notion-vue/editor
 
 A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features.
 
-[![npm version](https://badge.fury.io/js/notionuxt.svg)](https://badge.fury.io/js/notionuxt)
+[![npm version](https://badge.fury.io/js/%40notion-vue%2Feditor.svg)](https://badge.fury.io/js/%40notion-vue%2Feditor)
 ![Vue](https://img.shields.io/badge/Vue-3.0+-4FC08D?style=flat&logo=vue.js)
 ![TipTap](https://img.shields.io/badge/TipTap-3.x-000000?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
@@ -10,6 +10,7 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 ## ✨ Features
 
 ### Rich Text Editing
+
 - **Headings** (H1, H2, H3) with proper hierarchy
 - **Text Formatting**: Bold, italic, underline, strikethrough, highlight, superscript, subscript
 - **Lists**: Bullet lists, numbered lists, and nested task lists with checkboxes
@@ -19,11 +20,13 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 - **Typography**: Smart quotes, dashes, and ellipses
 
 ### Media & Embeds
+
 - **Image Upload**: Drag & drop or paste images with resize capabilities
 - **YouTube Embeds**: Embed videos with customizable controls
 - **File Handling**: Support for PNG, JPEG, GIF, and WebP images
 
 ### Interactive Elements
+
 - **Mentions**: @mention system with suggestions
 - **Emojis**: GitHub emoji picker with emoticon support
 - **Slash Commands**: Quick access to all editor features via `/` commands
@@ -32,11 +35,13 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 - **Drag & Drop**: Reorder content blocks with drag handles
 
 ### Collaboration & Storage
+
 - **Real-time Collaboration**: Powered by Yjs for multi-user editing
 - **Auto-save**: Content automatically saved to localStorage
 - **Persistent State**: Content restored on page reload
 
 ### UI/UX
+
 - **Modern Design**: Clean, minimal interface
 - **Dark/Light Theme**: Theme toggle with system preference detection
 - **Responsive**: Works seamlessly on desktop and mobile devices
@@ -46,17 +51,18 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 ## 🚀 Installation
 
 ### Prerequisites
+
 - Vue 3.0+
 - Node.js 16+
 
 ### Install the package
 
 ```bash
-npm install notionuxt
+npm install @notion-vue/editor
 # or
-yarn add notionuxt
+yarn add @notion-vue/editor
 # or
-pnpm add notionuxt
+pnpm add @notion-vue/editor
 ```
 
 ### Peer Dependencies
@@ -72,32 +78,23 @@ npm install vue@^3.0.0
 ### Basic Setup
 
 ```vue
+<script setup>
+import { NotionEditor } from '@notion-vue/editor'
+// Styles are automatically imported
+</script>
+
 <template>
   <div>
     <NotionEditor />
   </div>
 </template>
-
-<script setup>
-import { NotionEditor } from 'notionuxt'
-// Styles are automatically imported
-</script>
 ```
 
 ### With Options
 
 ```vue
-<template>
-  <div>
-    <NotionEditor
-      :options="editorOptions"
-      class="my-custom-editor"
-    />
-  </div>
-</template>
-
 <script setup>
-import { NotionEditor } from 'notionuxt'
+import { NotionEditor } from '@notion-vue/editor'
 
 const editorOptions = {
   content: '<p>Start writing...</p>',
@@ -106,21 +103,22 @@ const editorOptions = {
   placeholder: 'Type something...'
 }
 </script>
+
+<template>
+  <div>
+    <NotionEditor
+      :options="editorOptions"
+      class="my-custom-editor"
+    />
+  </div>
+</template>
 ```
 
 ### Advanced Usage with Composables
 
 ```vue
-<template>
-  <div>
-    <NotionEditor ref="editorRef" />
-    <button @click="getContent">Get Content</button>
-    <button @click="setContent">Set Content</button>
-  </div>
-</template>
-
 <script setup>
-import { NotionEditor, useEditor } from 'notionuxt'
+import { NotionEditor, useEditor } from '@notion-vue/editor'
 import { ref } from 'vue'
 
 const editorRef = ref()
@@ -129,18 +127,30 @@ const { editor } = useEditor({
   editable: true
 })
 
-const getContent = () => {
+function getContent() {
   if (editor.value) {
     console.log(editor.value.getHTML())
   }
 }
 
-const setContent = () => {
+function setContent() {
   if (editor.value) {
     editor.value.commands.setContent('<p>New content!</p>')
   }
 }
 </script>
+
+<template>
+  <div>
+    <NotionEditor ref="editorRef" />
+    <button @click="getContent">
+      Get Content
+    </button>
+    <button @click="setContent">
+      Set Content
+    </button>
+  </div>
+</template>
 ```
 
 ## 🎨 Styling
@@ -150,7 +160,7 @@ const setContent = () => {
 The package includes default styles that work out of the box. For full functionality, make sure to import the styles:
 
 ```javascript
-import 'notionuxt/styles'
+import '@notion-vue/editor/styles'
 ```
 
 ### Custom Styling
@@ -194,10 +204,10 @@ The editor uses the following CSS variables for theming:
 
 ```typescript
 interface EditorOptions {
-  content?: string           // Initial HTML content
-  editable?: boolean         // Whether the editor is editable (default: true)
-  autofocus?: boolean        // Auto-focus on mount (default: true)
-  placeholder?: string       // Placeholder text
+  content?: string // Initial HTML content
+  editable?: boolean // Whether the editor is editable (default: true)
+  autofocus?: boolean // Auto-focus on mount (default: true)
+  placeholder?: string // Placeholder text
 }
 ```
 
@@ -205,10 +215,10 @@ interface EditorOptions {
 
 ```javascript
 import {
+  createEditorExtensions,
   useEditor,
-  useEditorActions,
-  createEditorExtensions
-} from 'notionuxt'
+  useEditorActions
+} from '@notion-vue/editor'
 
 // Create a custom editor instance
 const { editor } = useEditor({
@@ -253,7 +263,7 @@ Type `/` followed by:
 ### Custom Extensions
 
 ```javascript
-import { NotionEditor, createEditorExtensions } from '@notion-vue/editor'
+import { createEditorExtensions, NotionEditor } from '@notion-vue/editor'
 import { CustomExtension } from './my-extensions'
 
 const customExtensions = createEditorExtensions(editor, lowlight)
@@ -270,7 +280,7 @@ const editor = new Editor({
 The editor supports real-time collaboration via Yjs:
 
 ```javascript
-import { NotionEditor } from 'notionuxt'
+import { NotionEditor } from '@notion-vue/editor'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
 
@@ -285,6 +295,7 @@ const provider = new WebrtcProvider('notion-editor-room', ydoc)
 ## 📱 Responsive Design
 
 The editor is fully responsive and optimized for:
+
 - **Desktop**: Full feature set with floating toolbar
 - **Tablet**: Adapted touch interactions
 - **Mobile**: Optimized mobile editing experience
