@@ -1,7 +1,7 @@
 {
   "name": "notionuxt",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features",
   "license": "MIT",
   "exports": {
