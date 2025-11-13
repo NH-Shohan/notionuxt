@@ -27,7 +27,6 @@ export default defineConfig({
         'tippy.js',
         '@floating-ui/dom',
         'highlight.js',
-        '@vueuse/core',
       ],
       output: {
         globals: {
@@ -42,11 +41,18 @@ export default defineConfig({
       },
     },
     cssCodeSplit: false,
-    minify: false,
+    minify: 'esbuild',
+    cssMinify: true,
+    target: 'es2015',
+    reportCompressedSize: true,
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'app'),
     },
+  },
+  esbuild: {
+    legalComments: 'none',
+    treeShaking: true,
   },
 })

@@ -1,8 +1,9 @@
 {
   "name": "notionuxt",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features",
+  "license": "MIT",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -69,6 +70,7 @@
     "@tiptap/suggestion": "^3.10.5",
     "@tiptap/vue-3": "^3.10.5",
     "@tiptap/y-tiptap": "^3.0.0",
+    "@vueuse/core": "^14.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "highlight.js": "^11.9.0",
@@ -86,7 +88,6 @@
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/vite": "^4.1.17",
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vueuse/core": "^14.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-format": "^1.0.2",
     "husky": "^9.1.7",
