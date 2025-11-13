@@ -1,9 +1,39 @@
 {
   "name": "notionuxt",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features",
+  "author": {
+    "name": "Nahim Hossain Shohan",
+    "url": "https://github.com/nh-shohan"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/nh-shohan/notionuxt#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nh-shohan/notionuxt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nh-shohan/notionuxt/issues"
+  },
+  "keywords": [
+    "notion",
+    "editor",
+    "rich-text",
+    "vue",
+    "vue3",
+    "nuxt",
+    "tiptap",
+    "collaboration",
+    "yjs",
+    "wysiwyg",
+    "markdown",
+    "slash-commands",
+    "mention",
+    "emoji",
+    "math",
+    "latex"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

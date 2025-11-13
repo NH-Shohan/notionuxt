@@ -2,10 +2,12 @@
 
 A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features.
 
-[![npm version](https://badge.fury.io/js/notionuxt.svg)](https://badge.fury.io/js/notionuxt)
+[![npm version](https://badge.fury.io/js/notionuxt.svg)](https://www.npmjs.com/package/notionuxt)
+[![npm downloads](https://img.shields.io/npm/dm/notionuxt.svg)](https://www.npmjs.com/package/notionuxt)
 ![Vue](https://img.shields.io/badge/Vue-3.0+-4FC08D?style=flat&logo=vue.js)
 ![TipTap](https://img.shields.io/badge/TipTap-3.x-000000?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![GitHub stars](https://img.shields.io/github/stars/nh-shohan/notionuxt.svg?style=social&label=Star)](https://github.com/nh-shohan/notionuxt)
 
 ## ✨ Features
 
@@ -66,6 +68,8 @@ pnpm add notionuxt
 ```
 
 **That's it!** No additional dependencies required - everything is bundled.
+
+📦 **Package**: [npmjs.com/package/notionuxt](https://www.npmjs.com/package/notionuxt)
 
 ### Tailwind CSS Configuration
 
@@ -386,14 +390,17 @@ The editor supports real-time collaboration via Yjs:
 
 ```javascript
 import { NotionEditor } from 'notionuxt'
-import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
+import * as Y from 'yjs'
 
 // Set up Yjs document
 const ydoc = new Y.Doc()
 const provider = new WebrtcProvider('notion-editor-room', ydoc)
+```
 
-// Use in editor
+Then use it in your Vue template:
+
+```vue
 <NotionEditor :options="{ ydoc }" />
 ```
 
@@ -407,20 +414,55 @@ The editor is fully responsive and optimized for:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see the main repository for contribution guidelines.
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
+3. **Make your changes** and test thoroughly
+4. **Run linting**: `npm run lint:fix` or `pnpm lint:fix`
+5. **Commit your changes**: `git commit -m 'Add some feature'`
+6. **Push to the branch**: `git push origin feature/your-feature-name`
+7. **Open a Pull Request**
+
+### Guidelines
+
+- Follow Vue 3 Composition API patterns
+- Use TypeScript for type safety
+- Follow the existing code style
+- Add tests for new features
+- Update documentation as needed
+
+For more details, see the [Contributing Guide](https://github.com/nh-shohan/notionuxt/blob/main/CONTRIBUTING.md) (if available).
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Author
+
+**Nahim Hossain Shohan**
+
+- GitHub: [@nh-shohan](https://github.com/nh-shohan)
+- LinkedIn: [Nahim Hossain Shohan](https://www.linkedin.com/in/nahim-hossain-shohan/)
 
 ## 🙏 Acknowledgments
 
 - [TipTap](https://tiptap.dev/) - The headless editor framework
 - [Vue.js](https://vuejs.org/) - The progressive JavaScript framework
 - [Yjs](https://yjs.dev/) - Real-time collaboration framework
+- [Nuxt.js](https://nuxt.com/) - The Vue.js framework
+- [shadcn-vue](https://www.shadcn-vue.com/) - Beautiful Vue UI components
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/your-repo/notion-vue)
-- [Issues](https://github.com/your-repo/notion-vue/issues)
-- [Discussions](https://github.com/your-repo/notion-vue/discussions)
+- 📦 [npm Package](https://www.npmjs.com/package/notionuxt)
+- 🌐 [Live Demo](https://notionuxt.vercel.app)
+- 📚 [GitHub Repository](https://github.com/nh-shohan/notionuxt)
+- 🐛 [Report Issues](https://github.com/nh-shohan/notionuxt/issues)
+- 💬 [Discussions](https://github.com/nh-shohan/notionuxt/discussions)
+- 📖 [Documentation](https://github.com/nh-shohan/notionuxt#readme)
+
+---
+
+Made with ❤️ and lots of ☕
