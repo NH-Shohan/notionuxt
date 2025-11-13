@@ -1,5 +1,6 @@
 import type { Editor as EditorType } from '@tiptap/vue-3'
 import type { Ref } from 'vue'
+import type { EditorOptions } from '../types/editor'
 import { migrateMathStrings } from '@tiptap/extension-mathematics'
 import { Editor } from '@tiptap/vue-3'
 import css from 'highlight.js/lib/languages/css'
@@ -7,9 +8,8 @@ import js from 'highlight.js/lib/languages/javascript'
 import ts from 'highlight.js/lib/languages/typescript'
 import html from 'highlight.js/lib/languages/xml'
 import { all, createLowlight } from 'lowlight'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { createEditorExtensions } from './useEditorExtensions'
-import type { EditorOptions } from '../types/editor'
 
 const STORAGE_KEY = 'editor-content'
 
@@ -23,7 +23,10 @@ export function useEditor(options: EditorOptions = {}) {
   lowlight.register('js', js)
   lowlight.register('ts', ts)
 
-  onMounted(() => {
+  onMounted(async () => {
+    // Wait for DOM updates to complete
+    await nextTick()
+
     // Load content from localStorage or use provided content
     const savedContent = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
 

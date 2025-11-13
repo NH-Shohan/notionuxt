@@ -14,11 +14,6 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'vue',
-        '@tiptap/vue-3',
-        '@tiptap/core',
-        '@tiptap/extensions',
-        '@tiptap/pm',
-        '@tiptap/suggestion',
         'yjs',
         'y-protocols',
         '@tiptap/y-tiptap',

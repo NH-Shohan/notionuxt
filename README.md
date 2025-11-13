@@ -10,6 +10,7 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 ## ✨ Features
 
 ### Rich Text Editing
+
 - **Headings** (H1, H2, H3) with proper hierarchy
 - **Text Formatting**: Bold, italic, underline, strikethrough, highlight, superscript, subscript
 - **Lists**: Bullet lists, numbered lists, and nested task lists with checkboxes
@@ -19,11 +20,13 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 - **Typography**: Smart quotes, dashes, and ellipses
 
 ### Media & Embeds
+
 - **Image Upload**: Drag & drop or paste images with resize capabilities
 - **YouTube Embeds**: Embed videos with customizable controls
 - **File Handling**: Support for PNG, JPEG, GIF, and WebP images
 
 ### Interactive Elements
+
 - **Mentions**: @mention system with suggestions
 - **Emojis**: GitHub emoji picker with emoticon support
 - **Slash Commands**: Quick access to all editor features via `/` commands
@@ -32,11 +35,13 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 - **Drag & Drop**: Reorder content blocks with drag handles
 
 ### Collaboration & Storage
+
 - **Real-time Collaboration**: Powered by Yjs for multi-user editing
 - **Auto-save**: Content automatically saved to localStorage
 - **Persistent State**: Content restored on page reload
 
 ### UI/UX
+
 - **Modern Design**: Clean, minimal interface
 - **Dark/Light Theme**: Theme toggle with system preference detection
 - **Responsive**: Works seamlessly on desktop and mobile devices
@@ -46,7 +51,8 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 ## 🚀 Installation
 
 ### Prerequisites
-- Vue 3.0+
+
+- Nuxt 3.0+
 - Node.js 16+
 
 ### Install the package
@@ -59,12 +65,42 @@ yarn add notionuxt
 pnpm add notionuxt
 ```
 
-### Peer Dependencies
+**That's it!** No additional dependencies required - everything is bundled.
 
-Make sure you have Vue 3 installed in your project:
+### Tailwind CSS Configuration
 
-```bash
-npm install vue@^3.0.0
+The package automatically configures Tailwind CSS for you! Just use the provided helper:
+
+#### For Tailwind CSS v3
+
+Wrap your Tailwind config with the `withNotionUxt` helper:
+
+```javascript
+// tailwind.config.js
+const { withNotionUxt } = require('notionuxt/lib/tailwind-config')
+
+module.exports = withNotionUxt({
+  content: [
+    './components/**/*.{js,vue,ts}',
+    './layouts/**/*.vue',
+    './pages/**/*.vue',
+    // notionuxt paths are automatically added!
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+})
+```
+
+#### For Tailwind CSS v4
+
+The `@source` directive is automatically included in the package styles. Just import the styles:
+
+```css
+@import 'tailwindcss';
+@import 'notionuxt/styles';
+/* notionuxt content paths are automatically included! */
 ```
 
 ## 📖 Usage
@@ -72,30 +108,21 @@ npm install vue@^3.0.0
 ### Basic Setup
 
 ```vue
+<script setup>
+import { NotionEditor } from 'notionuxt'
+// Styles are automatically imported
+</script>
+
 <template>
   <div>
     <NotionEditor />
   </div>
 </template>
-
-<script setup>
-import { NotionEditor } from 'notionuxt'
-// Styles are automatically imported
-</script>
 ```
 
 ### With Options
 
 ```vue
-<template>
-  <div>
-    <NotionEditor
-      :options="editorOptions"
-      class="my-custom-editor"
-    />
-  </div>
-</template>
-
 <script setup>
 import { NotionEditor } from 'notionuxt'
 
@@ -106,19 +133,20 @@ const editorOptions = {
   placeholder: 'Type something...'
 }
 </script>
+
+<template>
+  <div>
+    <NotionEditor
+      :options="editorOptions"
+      class="my-custom-editor"
+    />
+  </div>
+</template>
 ```
 
 ### Advanced Usage with Composables
 
 ```vue
-<template>
-  <div>
-    <NotionEditor ref="editorRef" />
-    <button @click="getContent">Get Content</button>
-    <button @click="setContent">Set Content</button>
-  </div>
-</template>
-
 <script setup>
 import { NotionEditor, useEditor } from 'notionuxt'
 import { ref } from 'vue'
@@ -129,18 +157,30 @@ const { editor } = useEditor({
   editable: true
 })
 
-const getContent = () => {
+function getContent() {
   if (editor.value) {
     console.log(editor.value.getHTML())
   }
 }
 
-const setContent = () => {
+function setContent() {
   if (editor.value) {
     editor.value.commands.setContent('<p>New content!</p>')
   }
 }
 </script>
+
+<template>
+  <div>
+    <NotionEditor ref="editorRef" />
+    <button @click="getContent">
+      Get Content
+    </button>
+    <button @click="setContent">
+      Set Content
+    </button>
+  </div>
+</template>
 ```
 
 ## 🎨 Styling
@@ -155,7 +195,66 @@ import 'notionuxt/styles'
 
 ### Custom Styling
 
-You can customize the appearance by overriding CSS variables or adding custom classes:
+You can customize the appearance by overriding CSS variables. **Important**: Define your custom CSS variables **after** importing `notionuxt/styles` to ensure they override the defaults:
+
+```css
+/* Import notionuxt styles first */
+@import 'tailwindcss';
+@import 'notionuxt/styles';
+
+/* Then define your custom variables - they will override the defaults */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #000000;
+  --accent: #f1f5f9;
+  --accent-foreground: #000000;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --radius: 0.75rem;
+}
+
+/* Override dark mode variables */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #ffffff;
+  --accent: #2a2a2a;
+  --accent-foreground: #ffffff;
+  --muted: #2a2a2a;
+  --muted-foreground: #a0a0a0;
+  --border: #3a3a3a;
+  --input: #3a3a3a;
+  --ring: #3b82f6;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+}
+
+body {
+  @apply bg-background text-foreground;
+}
+```
+
+Alternatively, you can scope variables to a specific class:
 
 ```vue
 <template>
@@ -173,7 +272,7 @@ You can customize the appearance by overriding CSS variables or adding custom cl
 
 ### CSS Variables
 
-The editor uses the following CSS variables for theming:
+The editor uses the following CSS variables for theming. Default values are defined in the `defaults` layer and can be overridden:
 
 ```css
 :root {
@@ -184,6 +283,19 @@ The editor uses the following CSS variables for theming:
   --border: #e2e8f0;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary-foreground: #ffffff;
+  --secondary-foreground: #000000;
+  --accent: #f1f5f9;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+  --radius: 0.75rem;
   /* ... and more */
 }
 ```
@@ -194,10 +306,10 @@ The editor uses the following CSS variables for theming:
 
 ```typescript
 interface EditorOptions {
-  content?: string           // Initial HTML content
-  editable?: boolean         // Whether the editor is editable (default: true)
-  autofocus?: boolean        // Auto-focus on mount (default: true)
-  placeholder?: string       // Placeholder text
+  content?: string // Initial HTML content
+  editable?: boolean // Whether the editor is editable (default: true)
+  autofocus?: boolean // Auto-focus on mount (default: true)
+  placeholder?: string // Placeholder text
 }
 ```
 
@@ -205,9 +317,9 @@ interface EditorOptions {
 
 ```javascript
 import {
+  createEditorExtensions,
   useEditor,
-  useEditorActions,
-  createEditorExtensions
+  useEditorActions
 } from 'notionuxt'
 
 // Create a custom editor instance
@@ -253,13 +365,16 @@ Type `/` followed by:
 ### Custom Extensions
 
 ```javascript
-import { NotionEditor, createEditorExtensions } from '@notion-vue/editor'
+import { createEditorExtensions } from '@notion-vue/editor'
 import { CustomExtension } from './my-extensions'
+
+const editor = ref(null) // Initialize editor ref first
+const lowlight = createLowlight(all)
 
 const customExtensions = createEditorExtensions(editor, lowlight)
 customExtensions.push(CustomExtension)
 
-const editor = new Editor({
+editor.value = new Editor({
   extensions: customExtensions,
   // ... other options
 })
@@ -285,6 +400,7 @@ const provider = new WebrtcProvider('notion-editor-room', ydoc)
 ## 📱 Responsive Design
 
 The editor is fully responsive and optimized for:
+
 - **Desktop**: Full feature set with floating toolbar
 - **Tablet**: Adapted touch interactions
 - **Mobile**: Optimized mobile editing experience
