@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import type { Editor as EditorType } from '@tiptap/vue-3'
+import type { Editor as NotionEditorInstance } from '@matrajs/core'
+import { useEditorState } from '@matrajs/vue'
 import { Palette } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import Label from '@/components/ui/label/Label.vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Separator } from '@/components/ui/separator'
 import { backgroundColors, textColors, useColorPicker } from '@/composables/useColorPicker'
 import { useEditorActions } from '@/composables/useEditorActions'
 
 const props = defineProps<{
-  editor: EditorType
+  editor: NotionEditorInstance
 }>()
 
 const editorActions = useEditorActions(computed(() => props.editor))
 const { recentlyUsed, loadRecentlyUsed, saveRecentlyUsed } = useColorPicker('background')
-const open = ref(false)
 
-const currentTextColor = computed(() => {
-  return props.editor.getAttributes('textStyle')?.color || null
-})
+// Matra has no getAttributes; the palettes are known, so the active colour is
+// whichever swatch the whole selection carries.
+const currentTextColor = useEditorState(props.editor, e =>
+  textColors.find(color => e.isActive('textStyle', { color })) ?? null)
 
-const currentBackgroundColor = computed(() => {
-  return props.editor.getAttributes('textStyle')?.backgroundColor || null
-})
+const currentBackgroundColor = useEditorState(props.editor, e =>
+  [...backgroundColors, ...recentlyUsed.value]
+    .find(color => e.isActive('textStyle', { backgroundColor: color })) ?? null)
 
 function handleTextColorSelect(color: string) {
   editorActions.setTextColor(color)
@@ -47,7 +49,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Popover v-model:open="open">
+  <Popover>
     <PopoverTrigger as-child>
       <Button
         variant="ghost"

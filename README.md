@@ -1,11 +1,11 @@
 # notionuxt
 
-A modern and beautiful Notion-style rich text editor for Vue 3 with collaborative features.
+A modern and beautiful Notion-style rich text editor for Vue 3, powered by [Matra](https://matrajs.com).
 
 [![npm version](https://badge.fury.io/js/notionuxt.svg)](https://www.npmjs.com/package/notionuxt)
 [![npm downloads](https://img.shields.io/npm/dm/notionuxt.svg)](https://www.npmjs.com/package/notionuxt)
 ![Vue](https://img.shields.io/badge/Vue-3.0+-4FC08D?style=flat&logo=vue.js)
-![TipTap](https://img.shields.io/badge/TipTap-3.x-000000?style=flat)
+![Matra](https://img.shields.io/badge/Matra-1.x-000000?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 [![GitHub stars](https://img.shields.io/github/stars/nh-shohan/notionuxt.svg?style=social&label=Star)](https://github.com/nh-shohan/notionuxt)
 
@@ -30,15 +30,14 @@ A modern and beautiful Notion-style rich text editor for Vue 3 with collaborativ
 ### Interactive Elements
 
 - **Mentions**: @mention system with suggestions
-- **Emojis**: GitHub emoji picker with emoticon support
+- **Emojis**: Emoji picker with `:shortcode:` and emoticon support
 - **Slash Commands**: Quick access to all editor features via `/` commands
 - **Collapsible Details**: Expandable content sections
 - **Mathematics**: LaTeX math expressions (inline and block)
 - **Drag & Drop**: Reorder content blocks with drag handles
 
-### Collaboration & Storage
+### Storage
 
-- **Real-time Collaboration**: Powered by Yjs for multi-user editing
 - **Auto-save**: Content automatically saved to localStorage
 - **Persistent State**: Content restored on page reload
 
@@ -169,7 +168,7 @@ function getContent() {
 
 function setContent() {
   if (editor.value) {
-    editor.value.commands.setContent('<p>New content!</p>')
+    editor.value.setContent('<p>New content!</p>')
   }
 }
 </script>
@@ -336,7 +335,7 @@ const { editor } = useEditor({
 const { toggleBold, toggleItalic } = useEditorActions(editor)
 
 // Create custom extensions
-const extensions = createEditorExtensions(editor, lowlight)
+const extensions = createEditorExtensions(lowlight)
 ```
 
 ## 🎯 Features & Shortcuts
@@ -347,9 +346,10 @@ const extensions = createEditorExtensions(editor, lowlight)
 - `Ctrl/Cmd + I` - Italic
 - `Ctrl/Cmd + U` - Underline
 - `Ctrl/Cmd + Shift + X` - Strikethrough
-- `Ctrl/Cmd + Shift + 7` - Numbered list
+- `Ctrl/Cmd + Shift + 7` - To-do list
 - `Ctrl/Cmd + Shift + 8` - Bullet list
-- `Ctrl/Cmd + Shift + 9` - Blockquote
+- `Ctrl/Cmd + Shift + 9` - Numbered list
+- `Ctrl/Cmd + Shift + B` - Blockquote
 
 ### Slash Commands
 
@@ -369,40 +369,25 @@ Type `/` followed by:
 ### Custom Extensions
 
 ```javascript
-import { createEditorExtensions } from '@notion-vue/editor'
-import { CustomExtension } from './my-extensions'
+import { createEditor } from '@matrajs/core'
+import { createEditorExtensions } from 'notionuxt'
+import { all, createLowlight } from 'lowlight'
+import { customExtension } from './my-extensions'
 
-const editor = ref(null) // Initialize editor ref first
 const lowlight = createLowlight(all)
 
-const customExtensions = createEditorExtensions(editor, lowlight)
-customExtensions.push(CustomExtension)
+// Matra extensions are plain objects in a plain array
+const extensions = [...createEditorExtensions(lowlight), customExtension]
 
-editor.value = new Editor({
-  extensions: customExtensions,
+const editor = createEditor({
+  extensions,
   // ... other options
 })
 ```
 
 ### Collaborative Editing
 
-The editor supports real-time collaboration via Yjs:
-
-```javascript
-import { NotionEditor } from 'notionuxt'
-import { WebrtcProvider } from 'y-webrtc'
-import * as Y from 'yjs'
-
-// Set up Yjs document
-const ydoc = new Y.Doc()
-const provider = new WebrtcProvider('notion-editor-room', ydoc)
-```
-
-Then use it in your Vue template:
-
-```vue
-<NotionEditor :options="{ ydoc }" />
-```
+Real-time collaboration is available through Matra's [`@matrajs/collab`](https://matrajs.com/docs/collab) package (step exchange, rebasing and presence over any transport). It is not bundled with notionuxt; see the Matra collaboration docs to wire it up.
 
 ## 📱 Responsive Design
 
@@ -447,9 +432,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [TipTap](https://tiptap.dev/) - The headless editor framework
+- [Matra](https://matrajs.com/) - The headless editor framework
 - [Vue.js](https://vuejs.org/) - The progressive JavaScript framework
-- [Yjs](https://yjs.dev/) - Real-time collaboration framework
 - [Nuxt.js](https://nuxt.com/) - The Vue.js framework
 - [shadcn-vue](https://www.shadcn-vue.com/) - Beautiful Vue UI components
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework

@@ -1,14 +1,65 @@
-import type { Level } from '@tiptap/extension-heading'
-import type { Editor as EditorType } from '@tiptap/vue-3'
+import type { Editor as NotionEditorInstance } from '@matrajs/core'
 import type { Ref } from 'vue'
 import type { LinkDialogConfig } from '@/components/editor/dialogs/CommonDialog.vue'
 import { ref } from 'vue'
 
-export function useEditorActions(editor: Ref<EditorType | null>) {
+export type HeadingLevel = 1 | 2 | 3
+
+type EditorCommand = (...args: any[]) => boolean
+
+// The commands this package drives, spelled out so strict index-access
+// checking sees them as always-present callables.
+export interface NotionEditorCommands {
+  focus: EditorCommand
+  remove: EditorCommand
+  insert: EditorCommand
+  setParagraph: EditorCommand
+  toggleHeading: EditorCommand
+  toggleBold: EditorCommand
+  toggleItalic: EditorCommand
+  toggleStrike: EditorCommand
+  toggleUnderline: EditorCommand
+  toggleCode: EditorCommand
+  toggleHighlight: EditorCommand
+  toggleSuperscript: EditorCommand
+  toggleSubscript: EditorCommand
+  toggleBlockquote: EditorCommand
+  toggleBulletList: EditorCommand
+  toggleOrderedList: EditorCommand
+  toggleCodeBlock: EditorCommand
+  toggleTaskList: EditorCommand
+  insertDetails: EditorCommand
+  unsetDetails: EditorCommand
+  setTextAlign: EditorCommand
+  insertHorizontalRule: EditorCommand
+  insertImage: EditorCommand
+  insertYoutube: EditorCommand
+  insertInlineMath: EditorCommand
+  insertBlockMath: EditorCommand
+  setLink: EditorCommand
+  unsetLink: EditorCommand
+  setColor: EditorCommand
+  unsetColor: EditorCommand
+  setBackgroundColor: EditorCommand
+  unsetBackgroundColor: EditorCommand
+}
+
+export function useEditorActions(editor: Ref<NotionEditorInstance | null>) {
   // Dialog state
   const dialogOpen = ref(false)
   const dialogConfig = ref<LinkDialogConfig>({ type: 'link' })
   const currentAction = ref<string>('')
+
+  function run(commands: (c: NotionEditorCommands) => void) {
+    const instance = editor.value
+    if (!instance)
+      return
+    instance.batch((raw) => {
+      const c = raw as unknown as NotionEditorCommands
+      c.focus()
+      commands(c)
+    })
+  }
 
   // Dialog handlers
   function handleDialogSave(value: string, file?: File) {
@@ -22,10 +73,10 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
       switch (action) {
         case 'toggleLink':
           if (value) {
-            editor.value?.chain().focus().extendMarkRange('link').setLink({ href: value, target: '_blank' }).run()
+            run(c => c.setLink({ href: value, target: '_blank' }))
           }
           else {
-            editor.value?.chain().focus().unsetLink().run()
+            run(c => c.unsetLink())
           }
           break
         case 'addImage':
@@ -35,28 +86,28 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
               const reader = new FileReader()
               reader.onload = (e) => {
                 const dataUrl = e.target?.result as string
-                editor.value?.chain().focus().setImage({ src: dataUrl }).run()
+                run(c => c.insertImage({ src: dataUrl }))
               }
               reader.readAsDataURL(file)
             }
             else {
-              editor.value?.chain().focus().setImage({ src: value }).run()
+              run(c => c.insertImage({ src: value }))
             }
           }
           break
         case 'onInsertInlineMath':
           if (value) {
-            editor.value?.chain().focus().insertInlineMath({ latex: value }).run()
+            run(c => c.insertInlineMath(value))
           }
           break
         case 'onInsertBlockMath':
           if (value) {
-            editor.value?.chain().focus().insertBlockMath({ latex: value }).run()
+            run(c => c.insertBlockMath(value))
           }
           break
         case 'addVideo':
           if (value) {
-            editor.value?.chain().focus().setYoutubeVideo({ src: value }).run()
+            run(c => c.insertYoutube({ src: value }))
           }
           break
       }
@@ -78,19 +129,19 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     dialogOpen.value = true
   }
   function toggleBold() {
-    editor.value?.chain().focus().toggleBold().run()
+    run(c => c.toggleBold())
   }
 
   function toggleItalic() {
-    editor.value?.chain().focus().toggleItalic().run()
+    run(c => c.toggleItalic())
   }
 
   function toggleStrike() {
-    editor.value?.chain().focus().toggleStrike().run()
+    run(c => c.toggleStrike())
   }
 
   function toggleUnderline() {
-    editor.value?.chain().focus().toggleUnderline().run()
+    run(c => c.toggleUnderline())
   }
 
   function toggleLink() {
@@ -99,43 +150,43 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function toggleCode() {
-    editor.value?.chain().focus().toggleCode().run()
+    run(c => c.toggleCode())
   }
 
   function toggleHighlight() {
-    editor.value?.chain().focus().toggleHighlight().run()
+    run(c => c.toggleHighlight())
   }
 
   function toggleSuperscript() {
-    editor.value?.chain().focus().toggleSuperscript().run()
+    run(c => c.toggleSuperscript())
   }
 
   function toggleSubscript() {
-    editor.value?.chain().focus().toggleSubscript().run()
+    run(c => c.toggleSubscript())
   }
 
   function toggleBlockquote() {
-    editor.value?.chain().focus().toggleBlockquote().run()
+    run(c => c.toggleBlockquote())
   }
 
   function toggleBulletList() {
-    editor.value?.chain().focus().toggleBulletList().run()
+    run(c => c.toggleBulletList())
   }
 
   function toggleOrderedList() {
-    editor.value?.chain().focus().toggleOrderedList().run()
+    run(c => c.toggleOrderedList())
   }
 
   function toggleCodeBlock() {
-    editor.value?.chain().focus().toggleCodeBlock().run()
+    run(c => c.toggleCodeBlock())
   }
 
   function setDetails() {
-    editor.value?.chain().focus().setDetails().run()
+    run(c => c.insertDetails())
   }
 
   function unsetDetails() {
-    editor.value?.chain().focus().unsetDetails().run()
+    run(c => c.unsetDetails())
   }
 
   function toggleDetails() {
@@ -147,20 +198,20 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     }
   }
 
-  function toggleHeading(level: Level) {
-    editor.value?.chain().focus().toggleHeading({ level }).run()
+  function toggleHeading(level: HeadingLevel) {
+    run(c => c.toggleHeading(level))
   }
 
   function setParagraph() {
-    editor.value?.chain().focus().setParagraph().run()
+    run(c => c.setParagraph())
   }
 
   function setTextAlign(align: 'left' | 'center' | 'right' | 'justify') {
-    editor.value?.chain().focus().setTextAlign(align).run()
+    run(c => c.setTextAlign(align))
   }
 
   function setHorizontalRule() {
-    editor.value?.chain().focus().setHorizontalRule().run()
+    run(c => c.insertHorizontalRule())
   }
 
   function addImage() {
@@ -168,10 +219,21 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
     openDialog('image', 'Insert Image', 'Upload an image or enter an image URL', 'https://example.com/image.jpg')
   }
 
+  // With a selection, the selected text becomes the formula, matching the
+  // previous behaviour. Without one, a dialog asks for the LaTeX source.
+  function selectedText() {
+    if (typeof window === 'undefined')
+      return ''
+    return window.getSelection()?.toString().trim() ?? ''
+  }
+
   function onInsertInlineMath() {
-    const hasSelection = !editor.value?.state.selection.empty
+    const hasSelection = !editor.value?.selection.empty
     if (hasSelection) {
-      return editor.value?.chain().focus().insertInlineMath({ latex: '' }).run()
+      const latex = selectedText()
+      if (latex) {
+        return run(c => c.insertInlineMath(latex))
+      }
     }
 
     currentAction.value = 'onInsertInlineMath'
@@ -179,9 +241,12 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function onInsertBlockMath() {
-    const hasSelection = !editor.value?.state.selection.empty
+    const hasSelection = !editor.value?.selection.empty
     if (hasSelection) {
-      return editor.value?.chain().focus().insertBlockMath({ latex: '' }).run()
+      const latex = selectedText()
+      if (latex) {
+        return run(c => c.insertBlockMath(latex))
+      }
     }
 
     currentAction.value = 'onInsertBlockMath'
@@ -189,7 +254,7 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
   }
 
   function toggleTaskList() {
-    editor.value?.chain().focus().toggleTaskList().run()
+    run(c => c.toggleTaskList())
   }
 
   function addVideo() {
@@ -199,37 +264,37 @@ export function useEditorActions(editor: Ref<EditorType | null>) {
 
   function toggleBackgroundColor() {
     if (editor.value?.isActive('textStyle')) {
-      editor.value?.chain().focus().unsetBackgroundColor().run()
+      run(c => c.unsetBackgroundColor())
     }
     else {
-      editor.value?.chain().focus().setBackgroundColor('#faf594').run()
+      run(c => c.setBackgroundColor('#faf594'))
     }
   }
 
   function toggleTextColor() {
     if (editor.value?.isActive('textStyle')) {
-      editor.value?.chain().focus().unsetColor().run()
+      run(c => c.unsetColor())
     }
     else {
-      editor.value?.chain().focus().setColor('#f00').run()
+      run(c => c.setColor('#f00'))
     }
   }
 
   function setTextColor(color: string) {
     if (color) {
-      editor.value?.chain().focus().setColor(color).run()
+      run(c => c.setColor(color))
     }
     else {
-      editor.value?.chain().focus().unsetColor().run()
+      run(c => c.unsetColor())
     }
   }
 
   function setBackgroundColor(color: string) {
     if (color) {
-      editor.value?.chain().focus().setBackgroundColor(color).run()
+      run(c => c.setBackgroundColor(color))
     }
     else {
-      editor.value?.chain().focus().unsetBackgroundColor().run()
+      run(c => c.unsetBackgroundColor())
     }
   }
 

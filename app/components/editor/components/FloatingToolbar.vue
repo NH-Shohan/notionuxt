@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor as EditorType } from '@tiptap/vue-3'
+import type { Editor as NotionEditorInstance } from '@matrajs/core'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import {
   AlignCenterIcon,
@@ -39,7 +39,7 @@ import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
 import { useEditorActions } from '@/composables/useEditorActions'
 
 const props = defineProps<{
-  editor: EditorType
+  editor: NotionEditorInstance
 }>()
 
 const editorActions = useEditorActions(computed(() => props.editor))
@@ -52,6 +52,10 @@ const position = ref({ top: 0, left: 0, transform: 'translateX(-50%)' })
 const toolbarRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 
+// The editor is not reactive; this bumps on every change/selection change so
+// the isActive checks in the template re-evaluate.
+const stateVersion = ref(0)
+
 // Close toolbar
 function closeToolbar() {
   show.value = false
@@ -60,7 +64,8 @@ function closeToolbar() {
 // Handle outside click
 onClickOutside(toolbarRef, (event) => {
   // Don't close if clicking inside the editor or if a dialog is open
-  if (show.value && !editorActions.dialogOpen.value && !props.editor.view.dom.contains(event.target as Node)) {
+  const target = event.target as Element | null
+  if (show.value && !editorActions.dialogOpen.value && !target?.closest?.('.matra-editor')) {
     closeToolbar()
   }
 })
@@ -104,14 +109,18 @@ const alignButtons = [
 
 // Check if button is active
 function isActive(button: typeof formatButtons[number] | typeof styleButtons[number]) {
+  void stateVersion.value
   return button.active ? props.editor.isActive(button.active) : false
 }
 
 function isAlignActive(align: string) {
-  return props.editor.isActive({ textAlign: align })
+  void stateVersion.value
+  return props.editor.isActive('paragraph', { textAlign: align })
+    || props.editor.isActive('heading', { textAlign: align })
 }
 
 function isBlockActive(button: typeof editorActions.blockButtons[number]) {
+  void stateVersion.value
   if (button.active === 'heading') {
     return props.editor.isActive('heading', { level: button.level })
   }
@@ -132,22 +141,40 @@ function getBlockIcon(iconName: string) {
   return iconMap[iconName as keyof typeof iconMap] || EllipsisVerticalIcon
 }
 
-function updatePosition() {
-  const { state, view } = props.editor
-  const { selection } = state
-  const { from, to } = selection
+// The viewport rects of the current DOM selection: the first and last line
+// boxes, standing in for the coordsAtPos calls the previous engine offered.
+function selectionRects() {
+  const domSelection = window.getSelection()
+  if (!domSelection || domSelection.rangeCount === 0) {
+    return null
+  }
+  const rects = domSelection.getRangeAt(0).getClientRects()
+  const start = rects[0]
+  const end = rects[rects.length - 1]
+  if (!start || !end) {
+    return null
+  }
+  return { start, end }
+}
 
-  // Check if this is a node selection (indicating drag handle usage) or if dragging
-  const isNodeSelection = (selection as any).node !== undefined
+function updatePosition() {
+  stateVersion.value++
+
+  const selection = props.editor.selection
+
+  // Node selections come from the drag handle; hide the toolbar for them
+  const engineSelection = (props.editor.unsafe.state as { selection?: { node?: unknown } } | null)?.selection
+  const isNodeSelection = engineSelection?.node !== undefined
+
+  const rects = selectionRects()
 
   // Hide toolbar during drag operations or node selections
-  if (from === to || isNodeSelection || isDragging.value) {
+  if (selection.empty || isNodeSelection || isDragging.value || !rects) {
     show.value = false
     return
   }
 
-  const start = view.coordsAtPos(from)
-  const end = view.coordsAtPos(to)
+  const { start, end } = rects
   const centerX = (start.left + end.left) / 2
   const centerY = Math.min(start.top, end.top)
 
@@ -241,20 +268,35 @@ function scheduleUpdate() {
   })
 }
 
+let unsubscribers: Array<() => void> = []
+
+function subscribeTo(editor: NotionEditorInstance) {
+  unsubscribers.push(editor.on('selectionChange', scheduleUpdate))
+  unsubscribers.push(editor.on('change', scheduleUpdate))
+}
+
+function unsubscribe() {
+  unsubscribers.forEach(off => off())
+  unsubscribers = []
+}
+
+function handleDragStart() {
+  isDragging.value = true
+}
+
+function handleDragEnd() {
+  isDragging.value = false
+}
+
 onMounted(() => {
   if (props.editor) {
-    props.editor.on('selectionUpdate', scheduleUpdate)
-    props.editor.on('update', scheduleUpdate)
+    subscribeTo(props.editor)
     updatePosition()
   }
 
   // Add global drag event listeners
-  document.addEventListener('dragstart', () => {
-    isDragging.value = true
-  })
-  document.addEventListener('dragend', () => {
-    isDragging.value = false
-  })
+  document.addEventListener('dragstart', handleDragStart)
+  document.addEventListener('dragend', handleDragEnd)
 })
 
 onBeforeUnmount(() => {
@@ -262,29 +304,18 @@ onBeforeUnmount(() => {
     cancelAnimationFrame(rafId)
   }
 
-  if (props.editor) {
-    props.editor.off('selectionUpdate', scheduleUpdate)
-    props.editor.off('update', scheduleUpdate)
-  }
+  unsubscribe()
 
   // Remove drag event listeners
-  document.removeEventListener('dragstart', () => {
-    isDragging.value = true
-  })
-  document.removeEventListener('dragend', () => {
-    isDragging.value = false
-  })
+  document.removeEventListener('dragstart', handleDragStart)
+  document.removeEventListener('dragend', handleDragEnd)
 })
 
-watch(() => props.editor, (newEditor, oldEditor) => {
-  if (oldEditor) {
-    oldEditor.off('selectionUpdate', scheduleUpdate)
-    oldEditor.off('update', scheduleUpdate)
-  }
+watch(() => props.editor, (newEditor) => {
+  unsubscribe()
 
   if (newEditor) {
-    newEditor.on('selectionUpdate', scheduleUpdate)
-    newEditor.on('update', scheduleUpdate)
+    subscribeTo(newEditor)
     updatePosition()
   }
 })

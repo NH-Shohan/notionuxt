@@ -1,11 +1,10 @@
 # [notionuxt](https://notionuxt.vercel.app)
 
-A modern, beautiful Notion-style rich text editor built with Nuxt.js, featuring collaborative editing capabilities and extensive formatting options.
+A modern, beautiful Notion-style rich text editor built with Nuxt.js on the Matra editor framework, with extensive formatting options.
 
 ![notionuxt Preview](https://img.shields.io/badge/Nuxt-4.2.1-00DC82?style=flat&logo=nuxt.js)
 ![Vue](https://img.shields.io/badge/Vue-3.5.24-4FC08D?style=flat&logo=vue.js)
-![TipTap](https://img.shields.io/badge/TipTap-3.10.5-000000?style=flat)
-![Yjs](https://img.shields.io/badge/Yjs-13.6.27-000000?style=flat)
+![Matra](https://img.shields.io/badge/Matra-1.x-000000?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## ✨ Features
@@ -35,9 +34,7 @@ A modern, beautiful Notion-style rich text editor built with Nuxt.js, featuring 
 - **Mathematics**: LaTeX math expressions (inline and block)
 - **Drag & Drop**: Reorder content blocks with drag handles
 
-### Collaboration & Storage
-
-- **Real-time Collaboration**: Powered by Yjs for multi-user editing
+### Storage
 - **Auto-save**: Content automatically saved to localStorage
 - **Persistent State**: Content restored on page reload
 
@@ -100,14 +97,14 @@ notionuxt/
 │   │   │   │   ├── SlashCommandList.vue
 │   │   │   │   └── TaskItemComponent.vue
 │   │   │   ├── dialogs/       # Editor dialogs
-│   │   │   ├── extensions/    # Custom TipTap extensions
+│   │   │   ├── suggestions/   # Slash/mention/emoji popup watchers
 │   │   │   └── suggestions/   # Suggestion systems
 │   │   ├── ui/                # Reusable UI components (shadcn-vue)
 │   │   └── ThemeToggler.vue   # Theme toggle component
 │   ├── composables/           # Vue composables
 │   │   ├── useEditor.ts       # Main editor logic
 │   │   ├── useEditorActions.ts # Editor actions
-│   │   ├── useEditorExtensions.ts # TipTap extensions
+│   │   ├── useEditorExtensions.ts # Matra extensions
 │   │   ├── useEditorToolbar.ts # Toolbar logic
 │   │   └── useBodyScrollLock.ts # Scroll lock utility
 │   ├── lib/
@@ -130,8 +127,7 @@ notionuxt/
 
 ### Editor Engine
 
-- **TipTap 3** - Headless editor framework for Vue
-- **Yjs** - CRDT for real-time collaboration
+- **Matra 1** - Headless editor framework (`@matrajs/core` + `@matrajs/vue`)
 - **ProseMirror** - Rich text editing engine
 
 ### UI & Styling
@@ -181,7 +177,7 @@ Type `/` followed by:
 
 ### Collaborative Editing
 
-The editor supports real-time collaboration via Yjs. Multiple users can edit the same document simultaneously with conflict-free replicated data types.
+Real-time collaboration is available through Matra's `@matrajs/collab` package (step exchange, rebasing and presence over any transport). It is not wired into this project by default.
 
 ## 🔧 Configuration
 
@@ -241,7 +237,7 @@ Customize appearance by modifying:
 
 Extend functionality by:
 
-- Adding new TipTap extensions
+- Adding new Matra extensions
 - Creating custom Vue components
 - Modifying existing UI components
 
@@ -265,7 +261,7 @@ pnpm postinstall  # Run after installation (nuxt prepare)
 
 ### Adding New Features
 
-1. Create a new TipTap extension or Vue component
+1. Create a new Matra extension or Vue component
 2. Add it to the appropriate directory
 3. Import and configure in `useEditorExtensions.ts`
 4. Update the slash commands if needed
@@ -303,10 +299,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [TipTap](https://tiptap.dev/) - The headless editor framework
+- [Matra](https://matrajs.com/) - The headless editor framework
 - [Nuxt.js](https://nuxt.com/) - The Vue.js framework
 - [shadcn-vue](https://www.shadcn-vue.com/) - Beautiful Vue UI components
-- [Yjs](https://yjs.dev/) - Real-time collaboration framework
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 
 ## 🔗 Links

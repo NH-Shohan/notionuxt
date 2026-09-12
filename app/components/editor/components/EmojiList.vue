@@ -13,7 +13,8 @@ export default {
 
     editor: {
       type: Object,
-      required: true,
+      required: false,
+      default: null,
     },
   },
 
@@ -65,7 +66,7 @@ export default {
       const item = this.items[index]
 
       if (item) {
-        this.command({ name: item.name })
+        this.command(item)
       }
     },
   },

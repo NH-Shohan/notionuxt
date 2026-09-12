@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor as EditorType } from '@tiptap/vue-3'
+import type { NotionEditorInstance } from '../../types/editor'
 import { Link2, Upload, YoutubeIcon } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { Button } from '../ui/button'
@@ -30,8 +30,8 @@ export interface LinkDialogConfig {
 
 const props = withDefaults(defineProps<{
   open: boolean
-  editor: EditorType
-  editorActions: ReturnType<typeof import('@/composables/useEditorActions').useEditorActions>
+  editor: NotionEditorInstance
+  editorActions: ReturnType<typeof import('../../composables/useEditorActions').useEditorActions>
   config?: LinkDialogConfig
   onSave?: (value: string, file?: File) => void
 }>(), {
@@ -108,13 +108,27 @@ const isMathType = computed(() => props.config?.type === 'inlineMath' || props.c
 const isImageType = computed(() => props.config?.type === 'image')
 const isYoutubeType = computed(() => props.config?.type === 'youtube')
 
+// The href of the link the caret sits in, read from the rendered DOM since
+// Matra exposes no getAttributes.
+function currentLinkHref(): string {
+  if (typeof window === 'undefined')
+    return ''
+  const selection = window.getSelection()
+  const node = selection?.anchorNode
+  const element = node instanceof Element ? node : node?.parentElement
+  const anchor = element?.closest?.('a')
+  if (!anchor || !anchor.closest('.matra-editor'))
+    return ''
+  return anchor.getAttribute('href') || ''
+}
+
 watch(
   () => props.open,
   (isOpen) => {
     if (isOpen) {
       // Always reset all state when opening
       if (props.config?.type === 'link') {
-        previousUrl.value = props.editor.getAttributes('link').href || ''
+        previousUrl.value = currentLinkHref()
         url.value = previousUrl.value
         selectedFile.value = null
         imageSource.value = 'link'
@@ -154,10 +168,16 @@ function handleSave() {
     // Default behavior
     if (props.config?.type === 'link') {
       if (url.value) {
-        props.editor.chain().focus().extendMarkRange('link').setLink({ href: url.value, target: '_blank' }).run()
+        props.editor.batch((c: any) => {
+          c.focus()
+          c.setLink({ href: url.value, target: '_blank' })
+        })
       }
       else {
-        props.editor.chain().focus().unsetLink().run()
+        props.editor.batch((c: any) => {
+          c.focus()
+          c.unsetLink()
+        })
       }
     }
   }

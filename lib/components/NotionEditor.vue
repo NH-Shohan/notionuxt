@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { Editor as EditorType } from '@tiptap/vue-3'
-import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
-import { EditorContent } from '@tiptap/vue-3'
+import type { EditorOptions } from '../types/editor'
+import { EditorContent } from '@matrajs/vue'
 import { useEditor } from '../composables/useEditor'
 import FloatingToolbar from './components/FloatingToolbar.vue'
 import 'katex/dist/katex.min.css'
-import type { EditorOptions } from '../types/editor'
 
 interface Props {
   options?: EditorOptions
@@ -14,27 +12,21 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   options: () => ({}),
-  class: ''
+  class: '',
 })
 
 const { editor } = useEditor(props.options)
 </script>
 
 <template>
-  <div :class="['notion-editor border rounded-lg p-4 mt-5 pl-6 relative bg-background/30', props.class]">
-    <DragHandle
+  <div class="notion-editor border rounded-lg p-4 mt-5 pl-6 relative bg-background/30" :class="[props.class]">
+    <EditorContent
       v-if="editor"
-      :editor="editor as EditorType"
-      :compute-position-config="{ placement: 'left-start', strategy: 'absolute' }"
-    >
-      <div class="drag-handle-icon">
-        ⠿
-      </div>
-    </DragHandle>
-    <EditorContent :editor="editor as EditorType" />
+      :editor="editor"
+    />
     <FloatingToolbar
       v-if="editor"
-      :editor="editor as EditorType"
+      :editor="editor"
     />
   </div>
 </template>
