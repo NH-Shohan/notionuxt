@@ -61,8 +61,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@matrajs/core": "^1.1.2",
-    "@matrajs/vue": "^1.1.2",
+    "@matrajs/core": "^1.1.6",
+    "@matrajs/vue": "^1.1.6",
     "@vueuse/core": "^14.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

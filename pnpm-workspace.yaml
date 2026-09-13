@@ -4,5 +4,5 @@ allowBuilds:
   unrs-resolver: true
   vue-demi: true
 minimumReleaseAgeExclude:
-  - '@matrajs/core@1.1.5'
-  - '@matrajs/vue@1.1.5'
+  - '@matrajs/core@1.1.5 || 1.1.6'
+  - '@matrajs/vue@1.1.5 || 1.1.6'
