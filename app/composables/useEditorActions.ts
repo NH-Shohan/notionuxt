@@ -54,11 +54,18 @@ export function useEditorActions(editor: Ref<NotionEditorInstance | null>) {
     const instance = editor.value
     if (!instance)
       return
-    instance.batch((raw) => {
-      const c = raw as unknown as NotionEditorCommands
-      c.focus()
-      commands(c)
-    })
+    try {
+      instance.batch((raw) => {
+        const c = raw as unknown as NotionEditorCommands
+        c.focus()
+        commands(c)
+      })
+    }
+    catch (error) {
+      // Matra >= 1.1.6 refuses a throwing command inside a batch itself;
+      // this keeps older engines from taking the toolbar down with them.
+      console.warn('Error executing editor command:', error)
+    }
   }
 
   // Dialog handlers

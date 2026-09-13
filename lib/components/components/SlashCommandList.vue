@@ -116,7 +116,8 @@ onMounted(() => {
   nextTick(() => {
     // Blur any focused element within the command component
     if (commandRef.value) {
-      const focusedElement = commandRef.value.querySelector(':focus')
+      const commandElement = (commandRef.value as any).$el as HTMLElement | undefined
+      const focusedElement = commandElement?.querySelector?.(':focus')
       if (focusedElement) {
         (focusedElement as HTMLElement).blur()
       }
@@ -157,12 +158,12 @@ watch(
     isKeyboardNavigation.value = false
     nextTick(() => {
       if (commandRef.value) {
-        const focusedElement = commandRef.value.querySelector(':focus')
+        const commandElement = (commandRef.value as any).$el as HTMLElement | undefined
+        const focusedElement = commandElement?.querySelector?.(':focus')
         if (focusedElement) {
           (focusedElement as HTMLElement).blur()
         }
         // Clear any highlighted/selected state from reka-ui
-        const commandElement = (commandRef.value as any).$el as HTMLElement
         if (commandElement) {
           const highlightedItems = commandElement.querySelectorAll('[data-highlighted]')
           highlightedItems.forEach((item: Element) => {

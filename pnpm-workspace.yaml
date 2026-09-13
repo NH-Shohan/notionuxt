@@ -3,3 +3,6 @@ allowBuilds:
   esbuild: true
   unrs-resolver: true
   vue-demi: true
+minimumReleaseAgeExclude:
+  - '@matrajs/core@1.1.5'
+  - '@matrajs/vue@1.1.5'
