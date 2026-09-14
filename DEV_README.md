@@ -35,6 +35,7 @@ A modern, beautiful Notion-style rich text editor built with Nuxt.js on the Matr
 - **Drag & Drop**: Reorder content blocks with drag handles
 
 ### Storage
+
 - **Auto-save**: Content automatically saved to localStorage
 - **Persistent State**: Content restored on page reload
 

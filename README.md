@@ -370,8 +370,8 @@ Type `/` followed by:
 
 ```javascript
 import { createEditor } from '@matrajs/core'
-import { createEditorExtensions } from 'notionuxt'
 import { all, createLowlight } from 'lowlight'
+import { createEditorExtensions } from 'notionuxt'
 import { customExtension } from './my-extensions'
 
 const lowlight = createLowlight(all)
