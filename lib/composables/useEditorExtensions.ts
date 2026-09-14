@@ -1,183 +1,213 @@
-import type { Editor as EditorType } from '@tiptap/vue-3'
-import type { Ref } from 'vue'
-import Blockquote from '@tiptap/extension-blockquote'
-import Bold from '@tiptap/extension-bold'
-import Code from '@tiptap/extension-code'
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details'
-import Document from '@tiptap/extension-document'
-import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji'
-import FileHandler from '@tiptap/extension-file-handler'
-import Heading from '@tiptap/extension-heading'
-import Highlight from '@tiptap/extension-highlight'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import Image from '@tiptap/extension-image'
-import Italic from '@tiptap/extension-italic'
-import Link from '@tiptap/extension-link'
-import { BulletList, ListItem, OrderedList, TaskItem, TaskList } from '@tiptap/extension-list'
-import { Mathematics } from '@tiptap/extension-mathematics'
-import Mention from '@tiptap/extension-mention'
-import Paragraph from '@tiptap/extension-paragraph'
-import Strike from '@tiptap/extension-strike'
-import Subscript from '@tiptap/extension-subscript'
-import Superscript from '@tiptap/extension-superscript'
-import Text from '@tiptap/extension-text'
-import TextAlign from '@tiptap/extension-text-align'
-import { BackgroundColor, Color, TextStyle } from '@tiptap/extension-text-style'
-import Typography from '@tiptap/extension-typography'
-import Underline from '@tiptap/extension-underline'
-import Youtube from '@tiptap/extension-youtube'
-import { Dropcursor, Gapcursor, Placeholder, UndoRedo } from '@tiptap/extensions'
-import { VueNodeViewRenderer } from '@tiptap/vue-3'
-import TaskItemComponent from '../components/components/TaskItemComponent.vue'
-import SlashCommand from '../components/extensions/SlashCommand'
-import EmojiSuggestion from '../components/suggestions/emoji-suggestion.js'
-import mentionSuggestion from '../components/suggestions/mention-suggestion.js'
+import type { CodeToken } from '@matrajs/core'
+import type { createLowlight } from 'lowlight'
+import {
+  blockquote,
+  bold,
+  bulletList,
+  code,
+  codeBlock,
+  codeHighlight,
+  detailsCSS,
+  detailsKit,
+  document as documentNode,
+  dragHandle,
+  dragHandleCSS,
+  emoji,
+  fileHandler,
+  heading,
+  highlight,
+  history,
+  horizontalRule,
+  image,
+  imageResize,
+  imageResizeCSS,
+  italic,
+  link,
+  listItem,
+  mathCSS,
+  mathKit,
+  mention,
+  orderedList,
+  paragraph,
+  placeholder,
+  placeholderCSS,
+  strike,
+  subscript,
+  suggestion,
+  suggestionCSS,
+  superscript,
+  taskItem,
+  taskList,
+  taskListCSS,
+  text,
+  textAlign,
+  textStyle,
+  trailingNode,
+  typography,
+  underline,
+  youtube,
+  youtubeCSS,
+} from '@matrajs/core'
+import katex from 'katex'
 
-const CustomTaskItem = TaskItem.extend({
-  addNodeView() {
-    return VueNodeViewRenderer(TaskItemComponent)
-  },
-})
+type Lowlight = ReturnType<typeof createLowlight>
 
-export function createEditorExtensions(
-  editor: Ref<EditorType | null>,
-  lowlight: ReturnType<typeof import('lowlight').createLowlight>,
-) {
+interface HastNode {
+  type: string
+  value?: string
+  properties?: { className?: string[] }
+  children?: HastNode[]
+}
+
+// Adapts lowlight's hast output to Matra's CodeToken shape. Tokens keep the
+// hljs-* class names, so the existing highlight theme applies unchanged.
+function lowlightHighlighter(lowlight: Lowlight) {
+  return (source: string, language: string | null): CodeToken[] => {
+    const tokens: CodeToken[] = []
+    let tree: { children: HastNode[] }
+    try {
+      tree = lowlight.highlight(language || 'javascript', source) as unknown as { children: HastNode[] }
+    }
+    catch {
+      try {
+        tree = lowlight.highlight('javascript', source) as unknown as { children: HastNode[] }
+      }
+      catch {
+        return []
+      }
+    }
+
+    let offset = 0
+    const walk = (nodes: HastNode[], classes: string[]) => {
+      for (const node of nodes) {
+        if (node.type === 'text' && typeof node.value === 'string') {
+          const length = node.value.length
+          if (classes.length > 0) {
+            tokens.push({ from: offset, to: offset + length, class: classes.join(' ') })
+          }
+          offset += length
+        }
+        else if (node.children) {
+          walk(node.children, [...classes, ...(node.properties?.className ?? [])])
+        }
+      }
+    }
+    walk(tree.children, [])
+    return tokens
+  }
+}
+
+function readFileAsImage(file: File, insert: (src: string) => void) {
+  const fileReader = new FileReader()
+  fileReader.readAsDataURL(file)
+  fileReader.onload = () => {
+    if (typeof fileReader.result === 'string') {
+      insert(fileReader.result)
+    }
+  }
+}
+
+export function createEditorExtensions(lowlight: Lowlight) {
   return [
-    Document,
-    Paragraph,
-    Text,
-    Heading.configure({
-      levels: [1, 2, 3],
+    documentNode,
+    paragraph,
+    text,
+    heading,
+    bold,
+    italic,
+    strike,
+    underline,
+    link,
+    code,
+    highlight,
+    superscript,
+    subscript,
+    blockquote,
+    bulletList,
+    orderedList,
+    listItem,
+    codeBlock,
+    codeHighlight({ highlight: lowlightHighlighter(lowlight) }),
+    ...detailsKit,
+    placeholder({
+      text: 'Press "/" to start...',
+      everyBlock: true,
     }),
-    Bold,
-    Italic,
-    Strike,
-    Underline,
-    Link,
-    Code,
-    Highlight.configure({ multicolor: true }),
-    Superscript,
-    Subscript,
-    Blockquote,
-    BulletList,
-    OrderedList,
-    ListItem,
-    CodeBlockLowlight.configure({
-      lowlight,
-      enableTabIndentation: true,
-      defaultLanguage: 'javascript',
-      tabSize: 2,
-    }),
-    Details.configure({
-      persist: false,
-      openClassName: 'is-open',
-      HTMLAttributes: {
-        class: 'details',
+    suggestion({ char: '/', name: 'slashCommand', decorationClass: 'matra-suggestion-slash' }),
+    suggestion({ char: '@', name: 'mentionPicker', decorationClass: 'matra-suggestion-mention' }),
+    suggestion({ char: ':', name: 'emojiPicker', decorationClass: 'matra-suggestion-emoji' }),
+    horizontalRule,
+    image,
+    imageResize({ min: 200 }),
+    emoji({ emoticons: true }),
+    ...mathKit({
+      render: (latex, element, display) => {
+        katex.render(latex, element, { displayMode: display, throwOnError: false })
       },
     }),
-    DetailsSummary,
-    DetailsContent,
-    Placeholder.configure({
-      includeChildren: true,
-      placeholder: 'Press "/" to start...',
-    }),
-    SlashCommand,
-    HorizontalRule,
-    Dropcursor,
-    Image.configure({
-      inline: true,
-      resize: {
-        enabled: true,
-        directions: ['bottom', 'right', 'bottom-right'],
-        minWidth: 200,
-        minHeight: 200,
-        alwaysPreserveAspectRatio: true,
-      },
-    }),
-    Emoji.configure({
-      emojis: gitHubEmojis,
-      enableEmoticons: true,
-      suggestion: EmojiSuggestion,
-    }),
-    Mathematics.configure({
-      blockOptions: {
-        onClick: (_node, _pos) => {
-          // Dialog handling will be done at component level
-          // For now, do nothing on click
-        },
-      },
-      inlineOptions: {
-        onClick: (_node, _pos) => {
-          // Dialog handling will be done at component level
-          // For now, do nothing on click
-        },
-      },
-    }),
-    Mention.configure({
-      HTMLAttributes: {
-        class: 'mention',
-      },
-      suggestion: mentionSuggestion,
-    }),
-    TaskList,
-    CustomTaskItem.configure({
-      nested: true,
-    }),
-    Youtube.configure({
-      controls: false,
-      nocookie: true,
-    }),
-    TextStyle,
-    BackgroundColor,
-    Color,
-    FileHandler.configure({
-      allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-      onDrop: (currentEditor, files, pos) => {
+    mention(),
+    taskList,
+    taskItem,
+    youtube,
+    textStyle,
+    fileHandler({
+      accept: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+      onDrop: ({ editor: currentEditor, files, pos, marker }) => {
         files.forEach((file) => {
-          const fileReader = new FileReader()
-
-          fileReader.readAsDataURL(file)
-          fileReader.onload = () => {
-            currentEditor
-              .chain()
-              .insertContentAt(pos, {
-                type: 'image',
-                attrs: {
-                  src: fileReader.result,
-                },
-              })
-              .focus()
-              .run()
-          }
+          readFileAsImage(file, (src) => {
+            currentEditor.commands.insert(
+              { type: 'image', attrs: { src } },
+              pos === null ? undefined : marker.map(pos),
+            )
+            currentEditor.commands.focus()
+          })
         })
       },
-      onPaste: (currentEditor, files) => {
+      onPaste: ({ editor: currentEditor, files }) => {
         files.forEach((file) => {
-          const fileReader = new FileReader()
-
-          fileReader.readAsDataURL(file)
-          fileReader.onload = () => {
-            currentEditor
-              .chain()
-              .insertContentAt(currentEditor.state.selection.anchor, {
-                type: 'image',
-                attrs: {
-                  src: fileReader.result,
-                },
-              })
-              .focus()
-              .run()
-          }
+          readFileAsImage(file, (src) => {
+            currentEditor.commands.insert({ type: 'image', attrs: { src } })
+            currentEditor.commands.focus()
+          })
         })
       },
     }),
-    Gapcursor,
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
+    textAlign(['heading', 'paragraph']),
+    typography,
+    history,
+    trailingNode(),
+    dragHandle({
+      render: () => {
+        const handle = document.createElement('div')
+        handle.className = 'drag-handle-icon'
+        handle.textContent = '⠿'
+        return handle
+      },
     }),
-    Typography,
-    UndoRedo,
-  ]
+  ] as const
+}
+
+// The stylesheet strings Matra extensions ship. Injected once at editor
+// creation, mirroring Tiptap's injectCSS behaviour.
+const MATRA_STYLE_ID = 'notionuxt-matra-styles'
+
+export function injectEditorStyles() {
+  if (typeof document === 'undefined')
+    return
+  if (document.getElementById(MATRA_STYLE_ID))
+    return
+
+  const style = document.createElement('style')
+  style.id = MATRA_STYLE_ID
+  style.textContent = [
+    dragHandleCSS,
+    taskListCSS,
+    detailsCSS,
+    mathCSS,
+    youtubeCSS,
+    placeholderCSS,
+    imageResizeCSS,
+    suggestionCSS,
+  ].join('\n')
+  document.head.appendChild(style)
 }

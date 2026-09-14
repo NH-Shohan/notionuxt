@@ -14,13 +14,10 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'vue',
-        'yjs',
-        'y-protocols',
-        '@tiptap/y-tiptap',
+        '@matrajs/core',
+        '@matrajs/vue',
         'lowlight',
         'katex',
-        'tippy.js',
-        '@floating-ui/dom',
         'highlight.js',
       ],
       output: {

@@ -21,10 +21,10 @@ import {
   YoutubeIcon,
 } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useEditorActions } from '../../composables/useEditorActions'
 import CommonDialog from '../dialogs/CommonDialog.vue'
 import { Command, CommandGroup, CommandItem, CommandList } from '../ui/command'
 import { Kbd, KbdGroup } from '../ui/kbd'
-import { useEditorActions } from '../../composables/useEditorActions'
 
 export interface SlashCommandItem {
   id: string
@@ -116,7 +116,8 @@ onMounted(() => {
   nextTick(() => {
     // Blur any focused element within the command component
     if (commandRef.value) {
-      const focusedElement = commandRef.value.querySelector(':focus')
+      const commandElement = (commandRef.value as any).$el as HTMLElement | undefined
+      const focusedElement = commandElement?.querySelector?.(':focus')
       if (focusedElement) {
         (focusedElement as HTMLElement).blur()
       }
@@ -157,12 +158,12 @@ watch(
     isKeyboardNavigation.value = false
     nextTick(() => {
       if (commandRef.value) {
-        const focusedElement = commandRef.value.querySelector(':focus')
+        const commandElement = (commandRef.value as any).$el as HTMLElement | undefined
+        const focusedElement = commandElement?.querySelector?.(':focus')
         if (focusedElement) {
           (focusedElement as HTMLElement).blur()
         }
         // Clear any highlighted/selected state from reka-ui
-        const commandElement = (commandRef.value as any).$el as HTMLElement
         if (commandElement) {
           const highlightedItems = commandElement.querySelectorAll('[data-highlighted]')
           highlightedItems.forEach((item: Element) => {
@@ -191,7 +192,8 @@ function handleFocus(event: FocusEvent) {
 
 // Handle outside click - just focus back to editor
 onClickOutside(commandRef, (event) => {
-  if (!props.editor?.view?.dom?.contains(event.target as Node)) {
+  const target = event.target as Element | null
+  if (!target?.closest?.('.matra-editor')) {
     props.editor?.commands?.focus()
   }
 })
@@ -453,76 +455,41 @@ function executeCommandWithValue(item: SlashCommandItem, value: string) {
     return
   }
 
-  try {
-    // Execute the command based on type
+  const insert = (c: any) => {
     if (item.id === 'image') {
-      if (range && isValidRange(editor, range)) {
-        // Delete the slash command range first, then insert image
-        editor.chain().focus().deleteRange(range).run()
-        editor.chain().focus().setImage({ src: value }).run()
-      }
-      else {
-        editor.chain().focus().setImage({ src: value }).run()
-      }
+      c.insertImage({ src: value })
     }
     else if (item.id === 'video') {
-      if (range && isValidRange(editor, range)) {
-        // Delete the slash command range first, then insert video
-        editor.chain().focus().deleteRange(range).run()
-        editor.chain().focus().setYoutubeVideo({ src: value }).run()
-      }
-      else {
-        editor.chain().focus().setYoutubeVideo({ src: value }).run()
-      }
+      c.insertYoutube({ src: value })
     }
     else if (item.id === 'inlineMath') {
-      if (range && isValidRange(editor, range)) {
-        // Delete the slash command range first, then insert inline math
-        editor.chain().focus().deleteRange(range).run()
-        editor.chain().focus().insertInlineMath({ latex: value }).run()
-      }
-      else {
-        editor.chain().focus().insertInlineMath({ latex: value }).run()
-      }
+      c.insertInlineMath(value)
     }
     else if (item.id === 'blockMath') {
-      if (range && isValidRange(editor, range)) {
-        // Delete the slash command range first, then insert block math
-        editor.chain().focus().deleteRange(range).run()
-        editor.chain().focus().insertBlockMath({ latex: value }).run()
-      }
-      else {
-        editor.chain().focus().insertBlockMath({ latex: value }).run()
-      }
+      c.insertBlockMath(value)
     }
   }
-  catch (error) {
-    console.warn('Error executing command:', error)
-    // Fallback: just insert without deleting range
-    if (item.id === 'inlineMath') {
-      editor.chain().focus().insertInlineMath({ latex: value }).run()
+
+  // Remove the "/query" text first, then insert. A batch rolls back entirely
+  // when the range is stale, so retry without the removal in that case.
+  const applied = editor.batch((c: any) => {
+    c.focus()
+    if (range) {
+      c.remove(range)
     }
-    else if (item.id === 'blockMath') {
-      editor.chain().focus().insertBlockMath({ latex: value }).run()
-    }
+    insert(c)
+  })
+  if (!applied) {
+    editor.batch((c: any) => {
+      c.focus()
+      insert(c)
+    })
   }
 
   // Close dialog and reset state
   dialogOpen.value = false
   pendingCommand.value = null
   pendingRange.value = null
-}
-
-// Helper function to check if a range is valid
-function isValidRange(editor: any, range: any) {
-  try {
-    const { doc } = editor.state
-    const { from, to } = range
-    return from >= 0 && to <= doc.content.size && from <= to
-  }
-  catch {
-    return false
-  }
 }
 
 function getItemIndex(item: SlashCommandItem): number {

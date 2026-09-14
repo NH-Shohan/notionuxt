@@ -1,4 +1,4 @@
-import type { Editor } from '@tiptap/vue-3'
+import type { Editor } from '@matrajs/core'
 
 export interface EditorOptions {
   content?: string

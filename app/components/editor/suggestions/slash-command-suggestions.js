@@ -1,7 +1,11 @@
-import { VueRenderer } from '@tiptap/vue-3'
+import { activeSuggestion } from '@matrajs/core'
 
 import SlashCommandList from '@/components/editor/components/SlashCommandList.vue'
 import { lockBodyScroll, unlockBodyScroll } from '@/composables/useBodyScrollLock'
+import { createPopupRenderer, positionPopup, suggestionAnchorRect } from './renderer'
+
+const SUGGESTION_NAME = 'slashCommand'
+const DECORATION_CLASS = 'matra-suggestion-slash'
 
 function getSuggestionItems() {
   return [
@@ -12,7 +16,13 @@ function getSuggestionItems() {
       description: 'Start writing with plain text',
       icon: 'TypeIcon',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).setParagraph().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.setParagraph()
+        })
       },
     },
     {
@@ -22,7 +32,13 @@ function getSuggestionItems() {
       icon: 'Heading1',
       shortcut: '#',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleHeading({ level: 1 }).run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleHeading(1)
+        })
       },
     },
     {
@@ -32,7 +48,13 @@ function getSuggestionItems() {
       icon: 'Heading2',
       shortcut: '##',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleHeading({ level: 2 }).run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleHeading(2)
+        })
       },
     },
     {
@@ -42,7 +64,13 @@ function getSuggestionItems() {
       icon: 'Heading3',
       shortcut: '###',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleHeading({ level: 3 }).run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleHeading(3)
+        })
       },
     },
     {
@@ -52,7 +80,13 @@ function getSuggestionItems() {
       icon: 'List',
       shortcut: '-',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleBulletList().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleBulletList()
+        })
       },
     },
     {
@@ -62,7 +96,13 @@ function getSuggestionItems() {
       icon: 'ListOrdered',
       shortcut: '1.',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleOrderedList().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleOrderedList()
+        })
       },
     },
     {
@@ -72,7 +112,13 @@ function getSuggestionItems() {
       icon: 'ListChecks',
       shortcut: '[]',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleTaskList().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleTaskList()
+        })
       },
     },
     {
@@ -82,7 +128,13 @@ function getSuggestionItems() {
       icon: 'ChevronRight',
       shortcut: '>',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).setDetails().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.insertDetails()
+        })
       },
     },
     {
@@ -92,7 +144,13 @@ function getSuggestionItems() {
       icon: 'Quote',
       shortcut: '"',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleBlockquote().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleBlockquote()
+        })
       },
     },
     {
@@ -102,7 +160,13 @@ function getSuggestionItems() {
       icon: 'Code2',
       shortcut: '```',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).toggleCodeBlock().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.toggleCodeBlock()
+        })
       },
     },
     {
@@ -111,7 +175,13 @@ function getSuggestionItems() {
       description: 'Insert a horizontal divider',
       icon: 'Minus',
       command: ({ editor, range }) => {
-        editor.chain().focus().deleteRange(range).setHorizontalRule().run()
+        editor.batch((c) => {
+          c.focus()
+          if (range) {
+            c.remove(range)
+          }
+          c.insertHorizontalRule()
+        })
       },
     },
     {
@@ -119,9 +189,8 @@ function getSuggestionItems() {
       title: 'Image',
       description: 'Insert an image',
       icon: 'Image',
-      command: ({ editor: _editor, range: _range }) => {
+      command: () => {
         // Dialog will be handled by SlashCommandList
-        // Don't execute here, just let the command be called
       },
     },
     {
@@ -129,9 +198,8 @@ function getSuggestionItems() {
       title: 'Youtube',
       description: 'Embed a YouTube video',
       icon: 'Youtube',
-      command: ({ editor: _editor, range: _range }) => {
+      command: () => {
         // Dialog will be handled by SlashCommandList
-        // Don't execute here, just let the command be called
       },
     },
     {
@@ -139,9 +207,8 @@ function getSuggestionItems() {
       title: 'Inline math',
       description: 'Insert inline math equation',
       icon: 'Sigma',
-      command: ({ editor: _editor, range: _range }) => {
+      command: () => {
         // Dialog will be handled by SlashCommandList
-        // Don't execute here, just let the command be called
       },
     },
     {
@@ -149,146 +216,138 @@ function getSuggestionItems() {
       title: 'Block math',
       description: 'Insert block math equation',
       icon: 'SquareSigma',
-      command: ({ editor: _editor, range: _range }) => {
+      command: () => {
         // Dialog will be handled by SlashCommandList
-        // Don't execute here, just let the command be called
       },
     },
   ]
 }
 
-export default {
-  items: ({ query }) => {
-    const items = getSuggestionItems()
-    if (!query) {
-      return items
+function filterItems(query) {
+  const items = getSuggestionItems()
+  if (!query) {
+    return items
+  }
+  const lowerQuery = query.toLowerCase()
+  return items.filter(item =>
+    item.title.toLowerCase().includes(lowerQuery)
+    || item.description?.toLowerCase().includes(lowerQuery)
+    || item.shortcut?.toLowerCase().includes(lowerQuery),
+  )
+}
+
+/**
+ * Owns the slash-command menu for one editor: watches Matra's headless
+ * suggestion state, renders SlashCommandList next to the trigger, and routes
+ * keyboard navigation into it. Returns a teardown function.
+ */
+export function watchSlashCommands(editor) {
+  let component = null
+
+  function hide() {
+    if (!component) {
+      return
     }
-    const lowerQuery = query.toLowerCase()
-    return items.filter(item =>
-      item.title.toLowerCase().includes(lowerQuery)
-      || item.description?.toLowerCase().includes(lowerQuery)
-      || item.shortcut?.toLowerCase().includes(lowerQuery),
-    )
-  },
+    if (document.body.contains(component.element)) {
+      document.body.removeChild(component.element)
+    }
+    component.destroy()
+    component = null
+    unlockBodyScroll()
+  }
 
-  render: () => {
-    let component
+  function executeItem(item) {
+    const active = activeSuggestion(editor, SUGGESTION_NAME)
+    const range = active?.range ?? null
+    hide()
+    try {
+      item.command({ editor, range })
+    }
+    catch (error) {
+      console.warn('Error executing slash command:', error)
+    }
+  }
 
-    function repositionComponent(clientRect) {
-      if (!component || !component.element) {
-        return
-      }
+  // The menu belongs to top-level paragraphs, where every block command is
+  // legal. Inside a list item or a toggle, turning the paragraph into a
+  // heading or a divider would break the schema.
+  function inTopLevelParagraph() {
+    const marker = document.querySelector(`.${DECORATION_CLASS}`)
+      ?? window.getSelection()?.anchorNode
+    const element = marker instanceof Element ? marker : marker?.parentElement
+    const paragraph = element?.closest?.('p')
+    return !!paragraph && !!paragraph.parentElement?.classList?.contains('matra-editor')
+  }
 
-      // Set initial position immediately to avoid flickering
-      const initialTop = clientRect.bottom + 16
-      const initialLeft = clientRect.left
-      Object.assign(component.element.style, {
-        position: 'fixed',
-        left: `${initialLeft}px`,
-        top: `${initialTop}px`,
-        zIndex: '50',
+  function sync() {
+    const active = activeSuggestion(editor, SUGGESTION_NAME)
+    if (!active || !inTopLevelParagraph()) {
+      // Deferred so a command that clears the suggestion state does not tear
+      // the list down while one of its own methods is still running.
+      queueMicrotask(() => {
+        if (!activeSuggestion(editor, SUGGESTION_NAME) || !inTopLevelParagraph()) {
+          hide()
+        }
       })
-
-      // Use requestAnimationFrame to ensure element is rendered and dimensions are accurate, then refine position
-      requestAnimationFrame(() => {
-        if (!component || !component.element) {
-          return
-        }
-
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
-        const padding = 8 // Padding from viewport edges
-        const gap = 16 // Gap between cursor and menu
-
-        // Get actual menu dimensions
-        const menuWidth = component.element.offsetWidth || 320
-        const menuHeight = component.element.offsetHeight || 440
-
-        // Calculate initial position (below cursor, aligned to left)
-        let top = clientRect.bottom + gap
-        let left = clientRect.left
-
-        // Check if menu would go off the bottom
-        if (top + menuHeight > viewportHeight - padding) {
-          // Try to position above cursor
-          const topPosition = clientRect.top - menuHeight - gap
-          if (topPosition >= padding) {
-            top = topPosition
-          }
-          else {
-            // If can't fit above, position at bottom of viewport
-            top = Math.max(padding, viewportHeight - menuHeight - padding)
-          }
-        }
-
-        // Check if menu would go off the right
-        if (left + menuWidth > viewportWidth - padding) {
-          // Align to right edge of viewport
-          left = viewportWidth - menuWidth - padding
-        }
-
-        // Check if menu would go off the left
-        if (left < padding) {
-          // Align to left edge of viewport
-          left = padding
-        }
-
-        Object.assign(component.element.style, {
-          position: 'fixed',
-          left: `${left}px`,
-          top: `${top}px`,
-          zIndex: '50',
-        })
-      })
+      return
     }
 
-    return {
-      onStart: (props) => {
-        component = new VueRenderer(SlashCommandList, {
-          props,
-          editor: props.editor,
-          range: props.range,
-        })
-
-        document.body.appendChild(component.element)
-        lockBodyScroll()
-        repositionComponent(props.clientRect())
-      },
-
-      onUpdate(props) {
-        component.updateProps({
-          ...props,
-          range: props.range,
-        })
-        repositionComponent(props.clientRect())
-      },
-
-      onKeyDown(props) {
-        if (props.event.key === 'Escape') {
-          if (component && document.body.contains(component.element)) {
-          document.body.removeChild(component.element)
-          }
-          if (component) {
-          component.destroy()
-          component = null
-          }
-          unlockBodyScroll()
-          return true
-        }
-
-        return component.ref?.onKeyDown(props)
-      },
-
-      onExit() {
-        if (component && document.body.contains(component.element)) {
-          document.body.removeChild(component.element)
-        }
-        if (component) {
-          component.destroy()
-          component = null
-        }
-        unlockBodyScroll()
-      },
+    const items = filterItems(active.query)
+    const props = {
+      items,
+      command: executeItem,
+      editor,
+      query: active.query,
+      range: active.range,
     }
-  },
+
+    if (!component) {
+      component = createPopupRenderer(SlashCommandList, props)
+      document.body.appendChild(component.element)
+      lockBodyScroll()
+    }
+    else {
+      component.updateProps(props)
+    }
+
+    positionPopup(component.element, suggestionAnchorRect(DECORATION_CLASS), { gap: 16 })
+  }
+
+  function onKeyDown(event) {
+    if (!component) {
+      return
+    }
+    // Keys typed into dialogs or other UI belong to that UI, not the menu
+    const target = event.target
+    if (target instanceof Element && !target.closest('.matra-editor')) {
+      return
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      editor.commands.cancelSlashCommand()
+      hide()
+      editor.commands.focus()
+      return
+    }
+
+    const handled = component.ref?.onKeyDown?.({ event })
+    if (handled) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  }
+
+  const offChange = editor.on('change', sync)
+  const offSelection = editor.on('selectionChange', sync)
+  // Captured, so the menu gets Enter before the editor splits the block with it
+  document.addEventListener('keydown', onKeyDown, true)
+
+  return () => {
+    document.removeEventListener('keydown', onKeyDown, true)
+    offChange()
+    offSelection()
+    hide()
+  }
 }
